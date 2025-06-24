@@ -55,10 +55,18 @@ coverage/
 *.tmp
 *.temp
 
-# API keys and secrets
+# API keys and secrets (NEVER COMMIT!)
 .env
+.env.*
 secrets.json
 config/local.json
+*.env
+*env*
+
+# Project-specific scripts (keep private)
+create_github_repo.sh
+setup_*.sh
+deploy_*.sh
 
 # Jupyter Notebook
 .ipynb_checkpoints
