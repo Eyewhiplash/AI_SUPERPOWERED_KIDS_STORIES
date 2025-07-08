@@ -18,7 +18,7 @@ const Footer = () => {
     <footer style={footerStyle}>
       <div style={containerStyle}>
         <p style={{margin: 0, fontSize: '14px'}}>
-          © 2024 AI Stories. Alla rättigheter förbehållna.
+          © 2025 AI Stories. Alla rättigheter förbehållna.
         </p>
       </div>
     </footer>
