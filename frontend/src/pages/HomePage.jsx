@@ -1,10 +1,37 @@
 import React from 'react'
 
 const HomePage = () => {
+  const mainStyle = {
+    backgroundColor: 'white',
+    minHeight: '400px',
+    padding: '40px 20px',
+    flex: 1
+  }
+
+  const containerStyle = {
+    maxWidth: '1200px',
+    margin: '0 auto',
+    textAlign: 'center'
+  }
+
+  const titleStyle = {
+    fontSize: '32px',
+    color: '#1f2937',
+    marginBottom: '16px'
+  }
+
+  const subtitleStyle = {
+    fontSize: '18px',
+    color: '#6b7280',
+    marginBottom: '32px'
+  }
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-blue-600">Tailwind CSS fungerar!</h1>
-      <p className="text-gray-600 mt-4">Detta är en tom hemsida med Tailwind CSS.</p>
+    <div style={mainStyle}>
+      <div style={containerStyle}>
+        <h2 style={titleStyle}>Välkommen till AI Stories</h2>
+        <p style={subtitleStyle}>Skapa magiska berättelser för barn med AI</p>
+      </div>
     </div>
   )
 }
