@@ -1,22 +1,15 @@
-import React from 'react'
+import { useState } from 'react'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import HomePage from './pages/HomePage'
 
 function App() {
-  const appStyle = {
-    minHeight: '100vh',
-    display: 'flex',
-    flexDirection: 'column',
-    fontFamily: 'system-ui, -apple-system, sans-serif'
-  }
+  const [selectedTheme, setSelectedTheme] = useState('candy')
 
   return (
-    <div style={appStyle}>
-      <Header />
-      <main style={{flex: 1}}>
-        <HomePage />
-      </main>
+    <div className="App">
+      <Header selectedTheme={selectedTheme} setSelectedTheme={setSelectedTheme} />
+      <HomePage selectedTheme={selectedTheme} />
       <Footer />
     </div>
   )
