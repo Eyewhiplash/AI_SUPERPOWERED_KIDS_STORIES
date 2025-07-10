@@ -32,16 +32,154 @@ const CalculatorPage = ({ selectedTheme = 'candy' }) => {
   const [operation, setOperation] = useState(null)
   const [waitingForNumber, setWaitingForNumber] = useState(false)
 
+  // Musical notes: do re mi fa sol la si do
+  const musicNotes = {
+    1: 261.63, // do (C4)
+    2: 293.66, // re (D4)
+    3: 329.63, // mi (E4)
+    4: 349.23, // fa (F4)
+    5: 392.00, // sol (G4)
+    6: 440.00, // la (A4)
+    7: 493.88, // si (B4)
+    8: 523.25, // do (C5)
+    9: 659.25, // special high note (E5)
+    0: 130.81  // low do (C3)
+  }
+
+  const playNote = (frequency) => {
+    if (typeof window !== 'undefined' && window.AudioContext) {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+      const oscillator = audioContext.createOscillator()
+      const gainNode = audioContext.createGain()
+      
+      oscillator.connect(gainNode)
+      gainNode.connect(audioContext.destination)
+      
+      oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime)
+      oscillator.type = 'sine'
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5)
+      
+      oscillator.start(audioContext.currentTime)
+      oscillator.stop(audioContext.currentTime + 0.5)
+    }
+  }
+
+  const playOperationSound = () => {
+    // Play a short chord for operations
+    if (typeof window !== 'undefined' && window.AudioContext) {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+      const frequencies = [440, 554.37] // A4 + C#5 chord
+      
+      frequencies.forEach(freq => {
+        const oscillator = audioContext.createOscillator()
+        const gainNode = audioContext.createGain()
+        
+        oscillator.connect(gainNode)
+        gainNode.connect(audioContext.destination)
+        
+        oscillator.frequency.setValueAtTime(freq, audioContext.currentTime)
+        oscillator.type = 'triangle'
+        
+        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime)
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3)
+        
+        oscillator.start(audioContext.currentTime)
+        oscillator.stop(audioContext.currentTime + 0.3)
+      })
+    }
+  }
+
+  const playClearSound = () => {
+    // Play a descending sound for clear
+    if (typeof window !== 'undefined' && window.AudioContext) {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+      const oscillator = audioContext.createOscillator()
+      const gainNode = audioContext.createGain()
+      
+      oscillator.connect(gainNode)
+      gainNode.connect(audioContext.destination)
+      
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime)
+      oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.4)
+      oscillator.type = 'sawtooth'
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4)
+      
+      oscillator.start(audioContext.currentTime)
+      oscillator.stop(audioContext.currentTime + 0.4)
+    }
+  }
+
+  const playEqualsSound = () => {
+    // Play success chord for equals
+    if (typeof window !== 'undefined' && window.AudioContext) {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+      const frequencies = [523.25, 659.25, 783.99] // C5, E5, G5 major chord
+      
+      frequencies.forEach((freq, index) => {
+        setTimeout(() => {
+          const oscillator = audioContext.createOscillator()
+          const gainNode = audioContext.createGain()
+          
+          oscillator.connect(gainNode)
+          gainNode.connect(audioContext.destination)
+          
+          oscillator.frequency.setValueAtTime(freq, audioContext.currentTime)
+          oscillator.type = 'sine'
+          
+          gainNode.gain.setValueAtTime(0.25, audioContext.currentTime)
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.6)
+          
+          oscillator.start(audioContext.currentTime)
+          oscillator.stop(audioContext.currentTime + 0.6)
+        }, index * 100)
+      })
+    }
+  }
+
+  const playClickSound = () => {
+    // Simple click for other buttons
+    if (typeof window !== 'undefined' && window.AudioContext) {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+      const oscillator = audioContext.createOscillator()
+      const gainNode = audioContext.createGain()
+      
+      oscillator.connect(gainNode)
+      gainNode.connect(audioContext.destination)
+      
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime)
+      oscillator.type = 'square'
+      
+      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1)
+      
+      oscillator.start(audioContext.currentTime)
+      oscillator.stop(audioContext.currentTime + 0.1)
+    }
+  }
+
   const inputNumber = (num) => {
+    // Play musical note for numbers 1-9
+    if (musicNotes[num]) {
+      playNote(musicNotes[num])
+    }
+    
     if (waitingForNumber) {
       setDisplay(String(num))
       setWaitingForNumber(false)
     } else {
-      setDisplay(display === '0' ? String(num) : display + num)
+      // Limit display to 15 digits to better use the wide screen
+      if (display.length < 15) {
+        setDisplay(display === '0' ? String(num) : display + num)
+      }
     }
   }
 
   const inputOperation = (nextOperation) => {
+    playOperationSound()
     const inputValue = parseFloat(display)
 
     if (previousValue === null) {
@@ -67,7 +205,21 @@ const CalculatorPage = ({ selectedTheme = 'candy' }) => {
           return
       }
 
-      setDisplay(String(result))
+      // Format result to fit display (max 15 characters for wide screen)
+      let resultStr = String(result)
+      if (resultStr.length > 15) {
+        // If result is too long, show in scientific notation or truncate
+        if (Math.abs(result) >= 1e12 || (Math.abs(result) < 1e-3 && result !== 0)) {
+          resultStr = result.toExponential(4)
+        } else {
+          resultStr = result.toPrecision(12)
+        }
+        // If still too long, truncate
+        if (resultStr.length > 15) {
+          resultStr = resultStr.substring(0, 15)
+        }
+      }
+      setDisplay(resultStr)
       setPreviousValue(result)
     }
 
@@ -76,13 +228,55 @@ const CalculatorPage = ({ selectedTheme = 'candy' }) => {
   }
 
   const calculate = () => {
-    inputOperation(null)
+    const inputValue = parseFloat(display)
+
+    if (previousValue !== null && operation) {
+      const currentValue = previousValue || 0
+      let result = 0
+
+      switch (operation) {
+        case '+':
+          result = currentValue + inputValue
+          break
+        case '-':
+          result = currentValue - inputValue
+          break
+        case '×':
+          result = currentValue * inputValue
+          break
+        case '÷':
+          result = inputValue !== 0 ? currentValue / inputValue : currentValue
+          break
+        default:
+          return
+      }
+
+      // Format result to fit display (max 15 characters for wide screen)
+      let resultStr = String(result)
+      if (resultStr.length > 15) {
+        // If result is too long, show in scientific notation or truncate
+        if (Math.abs(result) >= 1e12 || (Math.abs(result) < 1e-3 && result !== 0)) {
+          resultStr = result.toExponential(4)
+        } else {
+          resultStr = result.toPrecision(12)
+        }
+        // If still too long, truncate
+        if (resultStr.length > 15) {
+          resultStr = resultStr.substring(0, 15)
+        }
+      }
+      setDisplay(resultStr)
+      setPreviousValue(result)
+    }
+
+    playEqualsSound()
     setOperation(null)
     setPreviousValue(null)
     setWaitingForNumber(true)
   }
 
   const clear = () => {
+    playClearSound()
     setDisplay('0')
     setPreviousValue(null)
     setOperation(null)
@@ -132,7 +326,7 @@ const CalculatorPage = ({ selectedTheme = 'candy' }) => {
   const calculatorStyle = {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: '20px',
-    padding: '24px',
+    padding: '18px',
     boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
     backdropFilter: 'blur(10px)',
     border: '1px solid rgba(255, 255, 255, 0.2)'
@@ -141,35 +335,43 @@ const CalculatorPage = ({ selectedTheme = 'candy' }) => {
   const displayStyle = {
     backgroundColor: '#1f2937',
     color: '#ffffff',
-    fontSize: '32px',
+    fontSize: '36px',
     fontWeight: '600',
     padding: '20px',
     borderRadius: '12px',
-    marginBottom: '20px',
+    marginBottom: '15px',
     textAlign: 'right',
-    minHeight: '60px',
+    minHeight: '70px',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'flex-end'
+    justifyContent: 'flex-end',
+    fontFamily: 'monospace'
   }
 
   const buttonGridStyle = {
     display: 'grid',
     gridTemplateColumns: 'repeat(4, 1fr)',
-    gap: '12px'
+    gap: '8px'
   }
 
   const buttonStyle = {
     backgroundColor: '#f3f4f6',
     border: 'none',
     borderRadius: '12px',
-    padding: '20px',
-    fontSize: '20px',
+    padding: '12px',
+    fontSize: '18px',
     fontWeight: '600',
     color: '#1f2937',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
-    minHeight: '60px'
+    minHeight: '50px'
+  }
+
+  const musicalButtonStyle = {
+    ...buttonStyle,
+    background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)',
+    color: '#ffffff',
+    boxShadow: '0 4px 8px rgba(251, 191, 36, 0.3)'
   }
 
   const operationButtonStyle = {
@@ -210,6 +412,24 @@ const CalculatorPage = ({ selectedTheme = 'candy' }) => {
         
         <h1 style={titleStyle}>🧮 Miniräknare</h1>
         
+        <p style={{ 
+          color: currentTheme.textColor, 
+          fontSize: '18px', 
+          marginBottom: '20px',
+          fontWeight: '500'
+        }}>
+          🎵 Tryck på siffrorna och hör musiknoten! 🎵
+        </p>
+        
+        <p style={{ 
+          color: currentTheme.textColor, 
+          fontSize: '14px', 
+          marginBottom: '15px',
+          opacity: 0.7
+        }}>
+          Max 15 siffror (perfekt för den stora skärmen!)
+        </p>
+        
         <div style={calculatorStyle}>
           <div style={displayStyle}>
             {display}
@@ -217,27 +437,32 @@ const CalculatorPage = ({ selectedTheme = 'candy' }) => {
           
           <div style={buttonGridStyle}>
             <button style={clearButtonStyle} onClick={clear}>C</button>
-            <button style={buttonStyle} onClick={() => {}}>±</button>
-            <button style={buttonStyle} onClick={() => {}}>%</button>
+            <button style={buttonStyle} onClick={() => playClickSound()}>±</button>
+            <button style={buttonStyle} onClick={() => playClickSound()}>%</button>
             <button style={operationButtonStyle} onClick={() => inputOperation('÷')}>÷</button>
             
-            <button style={buttonStyle} onClick={() => inputNumber(7)}>7</button>
-            <button style={buttonStyle} onClick={() => inputNumber(8)}>8</button>
-            <button style={buttonStyle} onClick={() => inputNumber(9)}>9</button>
+            <button style={musicalButtonStyle} onClick={() => inputNumber(7)}>7<br/><small style={{fontSize: '8px', color: '#fbbf24'}}>si</small></button>
+            <button style={musicalButtonStyle} onClick={() => inputNumber(8)}>8<br/><small style={{fontSize: '8px', color: '#fbbf24'}}>do</small></button>
+            <button style={musicalButtonStyle} onClick={() => inputNumber(9)}>9<br/><small style={{fontSize: '8px', color: '#fbbf24'}}>♪</small></button>
             <button style={operationButtonStyle} onClick={() => inputOperation('×')}>×</button>
             
-            <button style={buttonStyle} onClick={() => inputNumber(4)}>4</button>
-            <button style={buttonStyle} onClick={() => inputNumber(5)}>5</button>
-            <button style={buttonStyle} onClick={() => inputNumber(6)}>6</button>
+            <button style={musicalButtonStyle} onClick={() => inputNumber(4)}>4<br/><small style={{fontSize: '8px', color: '#fbbf24'}}>fa</small></button>
+            <button style={musicalButtonStyle} onClick={() => inputNumber(5)}>5<br/><small style={{fontSize: '8px', color: '#fbbf24'}}>sol</small></button>
+            <button style={musicalButtonStyle} onClick={() => inputNumber(6)}>6<br/><small style={{fontSize: '8px', color: '#fbbf24'}}>la</small></button>
             <button style={operationButtonStyle} onClick={() => inputOperation('-')}>-</button>
             
-            <button style={buttonStyle} onClick={() => inputNumber(1)}>1</button>
-            <button style={buttonStyle} onClick={() => inputNumber(2)}>2</button>
-            <button style={buttonStyle} onClick={() => inputNumber(3)}>3</button>
+            <button style={musicalButtonStyle} onClick={() => inputNumber(1)}>1<br/><small style={{fontSize: '8px', color: '#fbbf24'}}>do</small></button>
+            <button style={musicalButtonStyle} onClick={() => inputNumber(2)}>2<br/><small style={{fontSize: '8px', color: '#fbbf24'}}>re</small></button>
+            <button style={musicalButtonStyle} onClick={() => inputNumber(3)}>3<br/><small style={{fontSize: '8px', color: '#fbbf24'}}>mi</small></button>
             <button style={operationButtonStyle} onClick={() => inputOperation('+')}>+</button>
             
-            <button style={{...buttonStyle, gridColumn: 'span 2'}} onClick={() => inputNumber(0)}>0</button>
-            <button style={buttonStyle} onClick={() => {}}>.</button>
+            <button style={{...musicalButtonStyle, gridColumn: 'span 2'}} onClick={() => inputNumber(0)}>0<br/><small style={{fontSize: '8px', color: '#fbbf24'}}>do baixo</small></button>
+            <button style={buttonStyle} onClick={() => {
+              playClickSound()
+              if (!display.includes('.') && display.length < 14) {
+                setDisplay(display + '.')
+              }
+            }}>.</button>
             <button style={equalsButtonStyle} onClick={calculate}>=</button>
           </div>
         </div>
