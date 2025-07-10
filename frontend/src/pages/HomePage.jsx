@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const themes = {
   candy: {
@@ -24,6 +25,7 @@ const themes = {
 }
 
 const HomePage = ({ selectedTheme = 'candy' }) => {
+  const navigate = useNavigate()
   const currentTheme = themes[selectedTheme] || themes.candy
 
   const mainStyle = {
@@ -106,6 +108,7 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
         <div style={cardContainerStyle}>
           <div 
             style={cardStyle}
+            onClick={() => navigate('/create-story')}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-8px)'
               e.currentTarget.style.boxShadow = '0 15px 35px rgba(0,0,0,0.15)'
@@ -124,6 +127,7 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
 
           <div 
             style={cardStyle}
+            onClick={() => navigate('/calculator')}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-8px)'
               e.currentTarget.style.boxShadow = '0 15px 35px rgba(0,0,0,0.15)'
@@ -142,6 +146,7 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
 
           <div 
             style={cardStyle}
+            onClick={() => navigate('/drawing')}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-8px)'
               e.currentTarget.style.boxShadow = '0 15px 35px rgba(0,0,0,0.15)'
