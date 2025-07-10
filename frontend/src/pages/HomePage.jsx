@@ -133,8 +133,8 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
               e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)'
             }}
           >
-            <span style={emojiStyle}>🎨</span>
-            <h3 style={cardTitleStyle}>Anpassa Äventyr</h3>
+            <span style={emojiStyle}>🧮</span>
+            <h3 style={cardTitleStyle}>Miniräknare</h3>
             <p style={cardTextStyle}>
               Välj karaktärer, miljöer och teman som passar ditt barns intressen
             </p>
@@ -151,8 +151,8 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
               e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)'
             }}
           >
-            <span style={emojiStyle}>💾</span>
-            <h3 style={cardTitleStyle}>Spara Favoritberättelser</h3>
+            <span style={emojiStyle}>✏️</span>
+            <h3 style={cardTitleStyle}>Ritplatta</h3>
             <p style={cardTextStyle}>
               Spara och återbesök dina favoritberättelser när som helst
             </p>
