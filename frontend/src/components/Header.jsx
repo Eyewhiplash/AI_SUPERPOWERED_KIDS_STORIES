@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const themes = {
   candy: {
@@ -34,6 +35,7 @@ const themes = {
 }
 
 const Header = ({ selectedTheme = 'candy', setSelectedTheme }) => {
+  const navigate = useNavigate()
   const [showLogin, setShowLogin] = useState(false)
   const [showThemes, setShowThemes] = useState(false)
   const [username, setUsername] = useState('')
@@ -147,7 +149,16 @@ const Header = ({ selectedTheme = 'candy', setSelectedTheme }) => {
     <header style={headerStyle}>
       <div style={headerInnerStyle}>
         <div style={containerStyle}>
-          <div style={{display: 'flex', alignItems: 'center'}}>
+          <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+            <button 
+              style={buttonStyle}
+              onClick={() => navigate('/')}
+              onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.9)'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.7)'}
+            >
+              🏠 Hem
+            </button>
+            
             <div style={{position: 'relative'}}>
               <button 
                 style={buttonStyle}
