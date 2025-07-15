@@ -301,27 +301,9 @@ const CalculatorPage = ({ selectedTheme = 'candy' }) => {
     textAlign: 'center'
   }
 
-  const titleStyle = {
-    fontSize: '48px',
-    color: currentTheme.textColor,
-    marginBottom: '16px',
-    fontWeight: '700',
-    textShadow: selectedTheme === 'space' || selectedTheme === 'ocean' ? '2px 2px 4px rgba(0,0,0,0.3)' : 'none'
-  }
 
-  const backButtonStyle = {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    border: 'none',
-    borderRadius: '12px',
-    padding: '12px 24px',
-    fontSize: '16px',
-    fontWeight: '600',
-    color: '#1f2937',
-    cursor: 'pointer',
-    marginBottom: '32px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-    transition: 'all 0.3s ease'
-  }
+
+
 
   const calculatorStyle = {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -395,22 +377,8 @@ const CalculatorPage = ({ selectedTheme = 'candy' }) => {
   return (
     <div style={mainStyle}>
       <div style={containerStyle}>
-        <button 
-          style={backButtonStyle}
-          onClick={() => navigate('/')}
-          onMouseEnter={(e) => {
-            e.target.style.transform = 'translateY(-2px)'
-            e.target.style.boxShadow = '0 6px 18px rgba(0,0,0,0.15)'
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0)'
-            e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'
-          }}
-        >
-          ← Tillbaka
-        </button>
-        
-        <h1 style={titleStyle}>🧮 Miniräknare</h1>
+
+
         
         <p style={{ 
           color: currentTheme.textColor, 
@@ -427,7 +395,7 @@ const CalculatorPage = ({ selectedTheme = 'candy' }) => {
           marginBottom: '15px',
           opacity: 0.7
         }}>
-          Max 15 siffror (perfekt för den stora skärmen!)
+          
         </p>
         
         <div style={calculatorStyle}>
