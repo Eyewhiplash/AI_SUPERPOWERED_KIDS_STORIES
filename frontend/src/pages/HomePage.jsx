@@ -119,9 +119,9 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
             }}
           >
             <span style={emojiStyle}>📚</span>
-            <h3 style={cardTitleStyle}>Skapa Berättelser</h3>
+            <h3 style={cardTitleStyle}>Sagor</h3>
             <p style={cardTextStyle}>
-              Använd AI för att skapa unika och personliga berättelser för ditt barn
+              Läs sparade sagor eller skapa nya magiska berättelser för ditt barn
             </p>
           </div>
 
@@ -140,7 +140,7 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
             <span style={emojiStyle}>🧮</span>
             <h3 style={cardTitleStyle}>Miniräknare</h3>
             <p style={cardTextStyle}>
-              Välj karaktärer, miljöer och teman som passar ditt barns intressen
+              Lär dig matematik på ett roligt sätt med färgglad miniräknare
             </p>
           </div>
 
@@ -159,7 +159,7 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
             <span style={emojiStyle}>✏️</span>
             <h3 style={cardTitleStyle}>Ritplatta</h3>
             <p style={cardTextStyle}>
-              Spara och återbesök dina favoritberättelser när som helst
+              Rita och måla med färger, verktyg och magiska stämplar
             </p>
           </div>
         </div>

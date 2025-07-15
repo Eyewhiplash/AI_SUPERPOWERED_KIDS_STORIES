@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const themes = {
@@ -27,63 +27,262 @@ const themes = {
 const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
   const navigate = useNavigate()
   const currentTheme = themes[selectedTheme] || themes.candy
+  const [currentView, setCurrentView] = useState('main') // 'main', 'bibliotek', 'ny-saga', 'sparade-sagor', 'universella-sagor'
 
   const mainStyle = {
-    background: currentTheme.background,
     minHeight: '100vh',
-    paddingTop: '48px',
-    paddingBottom: '60px',
-    margin: 0,
-    width: '100vw',
-    transition: 'all 0.5s ease'
+    background: currentTheme.background,
+    padding: '40px 20px',
+    fontFamily: 'Comic Sans MS, cursive',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   }
 
   const containerStyle = {
-    width: '100%',
-    maxWidth: '800px',
+    maxWidth: '1200px',
     margin: '0 auto',
-    padding: '40px 20px',
-    textAlign: 'center'
+    textAlign: 'center',
+    width: '100%'
   }
 
-  const titleStyle = {
-    fontSize: '48px',
-    color: currentTheme.textColor,
-    marginBottom: '16px',
-    fontWeight: '700',
-    textShadow: selectedTheme === 'space' || selectedTheme === 'ocean' ? '2px 2px 4px rgba(0,0,0,0.3)' : 'none'
-  }
-
-
-
-  const contentStyle = {
+  const buttonStyle = {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    border: 'none',
     borderRadius: '16px',
-    padding: '32px',
+    padding: '60px 60px',
+    fontSize: '18px',
+    fontWeight: '600',
+    color: '#1f2937',
+    cursor: 'pointer',
+    margin: '0',
     boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+    transition: 'all 0.3s ease',
+    width: '400px',
+    height: '250px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    textAlign: 'center',
+
     backdropFilter: 'blur(10px)',
     border: '1px solid rgba(255, 255, 255, 0.2)'
   }
 
+
+
+  const renderMainView = () => (
+    <>
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        gap: '24px',
+        flexWrap: 'nowrap',
+        maxWidth: '1000px',
+        margin: '0 auto'
+      }}>
+        <button 
+          style={buttonStyle}
+          onClick={() => setCurrentView('bibliotek')}
+          onMouseEnter={(e) => {
+            e.target.style.transform = 'translateY(-5px)'
+            e.target.style.boxShadow = '0 15px 30px rgba(0,0,0,0.2)'
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = 'translateY(0)'
+            e.target.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
+          }}
+        >
+          <div style={{ fontSize: '48px', marginBottom: '10px' }}>📖</div>
+          <div>Bibliotek</div>
+          <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '5px' }}>
+            Läs sparade & universella sagor
+          </div>
+        </button>
+        
+        <button 
+          style={buttonStyle}
+          onClick={() => setCurrentView('ny-saga')}
+          onMouseEnter={(e) => {
+            e.target.style.transform = 'translateY(-5px)'
+            e.target.style.boxShadow = '0 15px 30px rgba(0,0,0,0.2)'
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = 'translateY(0)'
+            e.target.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
+          }}
+        >
+          <div style={{ fontSize: '48px', marginBottom: '10px' }}>✨</div>
+          <div>Ny saga</div>
+          <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '5px' }}>
+            Skapa en ny magisk berättelse
+          </div>
+        </button>
+      </div>
+    </>
+  )
+
+  const renderBibliotekView = () => (
+    <>
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        gap: '24px',
+        flexWrap: 'nowrap',
+        maxWidth: '1000px',
+        margin: '0 auto'
+      }}>
+        <button 
+          style={buttonStyle}
+          onClick={() => setCurrentView('sparade-sagor')}
+          onMouseEnter={(e) => {
+            e.target.style.transform = 'translateY(-5px)'
+            e.target.style.boxShadow = '0 15px 30px rgba(0,0,0,0.2)'
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = 'translateY(0)'
+            e.target.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
+          }}
+        >
+          <div style={{ fontSize: '48px', marginBottom: '10px' }}>💾</div>
+          <div>Sparade sagor</div>
+          <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '5px' }}>
+            Dina egna skapade berättelser
+          </div>
+        </button>
+        
+        <button 
+          style={buttonStyle}
+          onClick={() => setCurrentView('universella-sagor')}
+          onMouseEnter={(e) => {
+            e.target.style.transform = 'translateY(-5px)'
+            e.target.style.boxShadow = '0 15px 30px rgba(0,0,0,0.2)'
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = 'translateY(0)'
+            e.target.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
+          }}
+        >
+          <div style={{ fontSize: '48px', marginBottom: '10px' }}>🌟</div>
+          <div>Universella sagor</div>
+          <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '5px' }}>
+            Klassiska sagor för alla barn
+          </div>
+        </button>
+      </div>
+    </>
+  )
+
+  const renderNySagaView = () => (
+    <>
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        gap: '24px'
+      }}>
+        <div style={{ 
+          backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+          borderRadius: '20px', 
+          padding: '40px',
+          boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+          textAlign: 'center',
+          maxWidth: '400px'
+        }}>
+          <div style={{ fontSize: '64px', marginBottom: '20px' }}>🚧</div>
+          <p style={{ fontSize: '18px', color: '#1f2937', marginBottom: '15px', fontWeight: '600' }}>
+            Magisk sagoskapare
+          </p>
+          <p style={{ fontSize: '16px', color: '#6b7280', lineHeight: '1.5' }}>
+            Snart kan du skapa fantastiska sagor med AI-hjälp! Funktionen utvecklas just nu.
+          </p>
+        </div>
+      </div>
+    </>
+  )
+
+  const renderSparadeSagorView = () => (
+    <>
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        gap: '24px'
+      }}>
+        <div style={{ 
+          backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+          borderRadius: '20px', 
+          padding: '40px',
+          boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+          textAlign: 'center',
+          width: '400px',
+          height: '250px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <div style={{ fontSize: '64px', marginBottom: '20px' }}>💾</div>
+          <p style={{ fontSize: '18px', color: '#1f2937', marginBottom: '15px', fontWeight: '600' }}>
+            Sparade sagor
+          </p>
+          <p style={{ fontSize: '16px', color: '#6b7280', lineHeight: '1.5' }}>
+            Här kommer dina egna skapade berättelser att visas. Funktionen byggs snart!
+          </p>
+        </div>
+      </div>
+    </>
+  )
+
+  const renderUniversellaSagorView = () => (
+    <>
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        gap: '24px'
+      }}>
+        <div style={{ 
+          backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+          borderRadius: '20px', 
+          padding: '40px',
+          boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+          textAlign: 'center',
+          width: '400px',
+          height: '250px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <div style={{ fontSize: '64px', marginBottom: '20px' }}>🌟</div>
+          <p style={{ fontSize: '18px', color: '#1f2937', marginBottom: '15px', fontWeight: '600' }}>
+            Universella sagor
+          </p>
+          <p style={{ fontSize: '16px', color: '#6b7280', lineHeight: '1.5' }}>
+            Klassiska sagor för alla barn kommer snart att finnas här!
+          </p>
+        </div>
+      </div>
+    </>
+  )
+
   return (
     <div style={mainStyle}>
       <div style={containerStyle}>
-
-        
-        <h1 style={titleStyle}>📚 Skapa Berättelser</h1>
-        
-        <div style={contentStyle}>
-          <h2 style={{ color: '#1f2937', marginBottom: '20px' }}>AI-driven berättelseskapare</h2>
-          <p style={{ color: '#4b5563', fontSize: '16px', lineHeight: '1.6' }}>
-            Här kommer du att kunna skapa fantastiska berättelser med hjälp av artificiell intelligens. 
-            Välj karaktärer, miljöer och teman för att skapa en unik berättelse för ditt barn.
-          </p>
-          <div style={{ marginTop: '32px', padding: '20px', backgroundColor: '#f3f4f6', borderRadius: '12px' }}>
-            <p style={{ color: '#6b7280', fontStyle: 'italic' }}>
-              Funktionen utvecklas fortfarande... 🚧
-            </p>
-          </div>
-        </div>
+        {currentView === 'main' && renderMainView()}
+        {currentView === 'bibliotek' && renderBibliotekView()}
+        {currentView === 'ny-saga' && renderNySagaView()}
+        {currentView === 'sparade-sagor' && renderSparadeSagorView()}
+        {currentView === 'universella-sagor' && renderUniversellaSagorView()}
       </div>
     </div>
   )
