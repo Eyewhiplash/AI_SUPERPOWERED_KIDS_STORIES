@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const themes = {
@@ -40,6 +40,8 @@ const Header = ({ selectedTheme = 'candy', setSelectedTheme }) => {
   const [showThemes, setShowThemes] = useState(false)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const loginDropdownRef = useRef(null)
+  const themesDropdownRef = useRef(null)
 
   const headerStyle = {
     position: 'fixed',
@@ -132,6 +134,25 @@ const Header = ({ selectedTheme = 'candy', setSelectedTheme }) => {
     fontWeight: '500'
   }
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (loginDropdownRef.current && !loginDropdownRef.current.contains(event.target)) {
+        setShowLogin(false)
+      }
+      if (themesDropdownRef.current && !themesDropdownRef.current.contains(event.target)) {
+        setShowThemes(false)
+      }
+    }
+
+    if (showLogin || showThemes) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showLogin, showThemes])
+
   const handleLogin = (e) => {
     e.preventDefault()
     console.log('Login:', { username, password })
@@ -159,7 +180,7 @@ const Header = ({ selectedTheme = 'candy', setSelectedTheme }) => {
               🏠 Hem
             </button>
             
-            <div style={{position: 'relative'}}>
+            <div style={{position: 'relative'}} ref={themesDropdownRef}>
               <button 
                 style={buttonStyle}
                 onClick={() => setShowThemes(!showThemes)}
@@ -199,14 +220,14 @@ const Header = ({ selectedTheme = 'candy', setSelectedTheme }) => {
 
           <h1 style={logoStyle}>AI Stories</h1>
           
-          <div style={{position: 'relative'}}>
+          <div style={{position: 'relative'}} ref={loginDropdownRef}>
             <button 
               style={buttonStyle}
               onClick={() => setShowLogin(!showLogin)}
               onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.9)'}
               onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.7)'}
             >
-              Logga in
+              🔐 Logga in
             </button>
             
             {showLogin && (
@@ -262,7 +283,10 @@ const Header = ({ selectedTheme = 'candy', setSelectedTheme }) => {
                         fontSize: '14px',
                         marginTop: '4px'
                       }}
-                      onClick={() => console.log('Register clicked')}
+                      onClick={() => {
+                        setShowLogin(false)
+                        navigate('/register')
+                      }}
                     >
                       Registrera dig här
                     </button>
