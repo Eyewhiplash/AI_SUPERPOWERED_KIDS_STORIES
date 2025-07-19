@@ -91,10 +91,10 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
   const mainStyle = {
     minHeight: '100vh',
     background: currentTheme.background,
-    padding: '120px 20px 20px 20px',
+    padding: '0 20px 60px 20px',
     fontFamily: 'Comic Sans MS, cursive',
     display: 'flex',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'center'
   }
 
@@ -102,7 +102,11 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
     maxWidth: '1200px',
     margin: '0 auto',
     textAlign: 'center',
-    width: '100%'
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center'
   }
 
   const buttonStyle = {
@@ -130,19 +134,21 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
 
   const gridStyle = {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+    gridTemplateColumns: 'repeat(4, 1fr)',
     gap: '20px',
     maxWidth: '1200px',
+    width: '100%',
     margin: '0 auto',
     padding: '0 20px',
-    justifyItems: 'center'
+    justifyItems: 'center',
+    alignItems: 'start'
   }
 
   const titleStyle = {
-    fontSize: '28px',
+    fontSize: '24px',
     fontWeight: '700',
     color: currentTheme.textColor,
-    marginBottom: '20px',
+    marginBottom: '10px',
     textAlign: 'center'
   }
 
@@ -190,9 +196,9 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
             e.target.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
           }}
         >
-          <div style={{ fontSize: '32px', marginBottom: '8px' }}>📖</div>
-          <div>Bibliotek</div>
-          <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
+          <div style={{ fontSize: '32px', marginBottom: '10px', fontFamily: 'Comic Sans MS, cursive' }}>📖</div>
+          <div style={{ fontSize: '16px', fontWeight: '700', marginBottom: '6px', fontFamily: 'Comic Sans MS, cursive' }}>Bibliotek</div>
+          <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '1.3', fontFamily: 'Comic Sans MS, cursive' }}>
             Läs sparade & universella sagor
           </div>
         </button>
@@ -219,9 +225,9 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
             e.target.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
           }}
         >
-          <div style={{ fontSize: '32px', marginBottom: '8px' }}>✨</div>
-          <div>Ny saga</div>
-          <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
+          <div style={{ fontSize: '32px', marginBottom: '10px', fontFamily: 'Comic Sans MS, cursive' }}>✨</div>
+          <div style={{ fontSize: '16px', fontWeight: '700', marginBottom: '6px', fontFamily: 'Comic Sans MS, cursive' }}>Ny saga</div>
+          <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '1.3', fontFamily: 'Comic Sans MS, cursive' }}>
             Skapa en ny magisk berättelse
           </div>
         </button>
@@ -253,9 +259,9 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
             e.target.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
           }}
         >
-          <div style={{ fontSize: '32px', marginBottom: '8px' }}>💾</div>
-          <div>Sparade sagor</div>
-          <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
+          <div style={{ fontSize: '32px', marginBottom: '10px', fontFamily: 'Comic Sans MS, cursive' }}>💾</div>
+          <div style={{ fontSize: '16px', fontWeight: '700', marginBottom: '6px', fontFamily: 'Comic Sans MS, cursive' }}>Sparade sagor</div>
+          <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '1.3', fontFamily: 'Comic Sans MS, cursive' }}>
             Dina egna skapade berättelser
           </div>
         </button>
@@ -272,9 +278,9 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
             e.target.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
           }}
         >
-          <div style={{ fontSize: '32px', marginBottom: '8px' }}>🌟</div>
-          <div>Universella sagor</div>
-          <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
+          <div style={{ fontSize: '32px', marginBottom: '10px', fontFamily: 'Comic Sans MS, cursive' }}>🌟</div>
+          <div style={{ fontSize: '16px', fontWeight: '700', marginBottom: '6px', fontFamily: 'Comic Sans MS, cursive' }}>Universella sagor</div>
+          <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '1.3', fontFamily: 'Comic Sans MS, cursive' }}>
             Klassiska sagor för alla barn
           </div>
         </button>
@@ -326,10 +332,11 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
       <>
         {storyStep !== 'character' && (
           <div style={{ 
-            textAlign: 'left', 
-            marginBottom: '20px',
+            display: 'flex',
+            justifyContent: 'flex-start',
+            width: '100%',
             maxWidth: '1200px',
-            margin: '0 auto 20px',
+            margin: '0 auto 10px',
             padding: '0 20px'
           }}>
             <button
@@ -337,28 +344,28 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
               style={{
                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
                 border: 'none',
-                borderRadius: '12px',
-                padding: '12px 20px',
-                fontSize: '16px',
+                borderRadius: '8px',
+                padding: '6px 12px',
+                fontSize: '14px',
                 fontWeight: '600',
                 color: '#1f2937',
                 cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                 transition: 'all 0.3s ease',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px'
+                gap: '4px'
               }}
               onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-2px)'
-                e.target.style.boxShadow = '0 6px 16px rgba(0,0,0,0.15)'
+                e.currentTarget.style.transform = 'translateY(-1px)'
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'
               }}
               onMouseLeave={(e) => {
-                e.target.style.transform = 'translateY(0)'
-                e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'
               }}
             >
-              <span style={{ fontSize: '18px' }}>←</span>
+              <span style={{ fontSize: '14px' }}>←</span>
               <span>Tillbaka</span>
             </button>
           </div>
@@ -367,7 +374,7 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
         <p style={{ 
           fontSize: '16px', 
           color: currentTheme.textColor, 
-          marginBottom: '20px',
+          marginBottom: '15px',
           opacity: 0.8
         }}>
           {subtitle}
@@ -379,19 +386,47 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
               style={buttonStyle}
               onClick={() => handleSelection(type, option)}
               onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-5px)'
-                e.target.style.boxShadow = '0 15px 30px rgba(0,0,0,0.2)'
+                e.currentTarget.style.transform = 'translateY(-5px)'
+                e.currentTarget.style.boxShadow = '0 15px 30px rgba(0,0,0,0.2)'
               }}
               onMouseLeave={(e) => {
-                e.target.style.transform = 'translateY(0)'
-                e.target.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
               }}
             >
-                             <div style={{ fontSize: '32px', marginBottom: '10px' }}>{option.emoji}</div>
-               <div style={{ fontSize: '16px', fontWeight: '700', marginBottom: '6px' }}>
+               <div style={{ 
+                 fontSize: '32px', 
+                 marginBottom: '10px',
+                 backgroundColor: 'transparent',
+                 border: 'none',
+                 padding: '0',
+                 margin: '0 0 10px 0',
+                 fontFamily: 'Comic Sans MS, cursive'
+               }}>{option.emoji}</div>
+               <div style={{ 
+                 fontSize: '16px', 
+                 fontWeight: '700', 
+                 marginBottom: '6px',
+                 backgroundColor: 'transparent',
+                 border: 'none',
+                 padding: '0',
+                 margin: '0 0 6px 0',
+                 fontFamily: 'Comic Sans MS, cursive'
+               }}>
                  {option.name}
                </div>
-               <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '1.3' }}>
+               <div style={{ 
+                 fontSize: '12px', 
+                 color: '#6b7280', 
+                 lineHeight: '1.3',
+                 backgroundColor: 'transparent !important',
+                 border: 'none',
+                 padding: '0',
+                 margin: '0',
+                 boxShadow: 'none',
+                 outline: 'none',
+                 fontFamily: 'Comic Sans MS, cursive'
+               }}>
                  {option.description}
                </div>
             </button>
@@ -402,12 +437,20 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
   }
 
   const renderStoryGeneration = () => (
-    <>
+    <div style={{ 
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      maxHeight: 'calc(100vh - 140px)',
+      overflow: 'hidden',
+      width: '100%'
+    }}>
       <div style={{ 
-        textAlign: 'left', 
-        marginBottom: '20px',
+        display: 'flex',
+        justifyContent: 'flex-start',
+        width: '100%',
         maxWidth: '1200px',
-        margin: '0 auto 20px',
+        margin: '0 auto 8px',
         padding: '0 20px'
       }}>
         <button
@@ -415,50 +458,53 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
           style={{
             backgroundColor: 'rgba(255, 255, 255, 0.9)',
             border: 'none',
-            borderRadius: '12px',
-            padding: '12px 20px',
-            fontSize: '16px',
+            borderRadius: '8px',
+            padding: '6px 12px',
+            fontSize: '14px',
             fontWeight: '600',
             color: '#1f2937',
             cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
             transition: 'all 0.3s ease',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
+            gap: '4px'
           }}
           onMouseEnter={(e) => {
-            e.target.style.transform = 'translateY(-2px)'
-            e.target.style.boxShadow = '0 6px 16px rgba(0,0,0,0.15)'
+            e.currentTarget.style.transform = 'translateY(-1px)'
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'
           }}
           onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0)'
-            e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'
+            e.currentTarget.style.transform = 'translateY(0)'
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'
           }}
         >
-          <span style={{ fontSize: '18px' }}>←</span>
+          <span style={{ fontSize: '14px' }}>←</span>
           <span>Tillbaka</span>
         </button>
       </div>
-      <h2 style={titleStyle}>Din saga är redo!</h2>
+      
+      <h2 style={{ ...titleStyle, marginBottom: '8px' }}>Din saga är redo!</h2>
+      
       <div style={{ 
         backgroundColor: 'rgba(255, 255, 255, 0.9)', 
-        borderRadius: '20px', 
-        padding: '40px',
+        borderRadius: '16px', 
+        padding: '20px',
         boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
         textAlign: 'left',
-        maxWidth: '800px',
-        margin: '0 auto 40px'
+        maxWidth: '600px',
+        width: '100%',
+        margin: '0 auto 15px'
       }}>
-        <h3 style={{ fontSize: '24px', marginBottom: '20px', color: '#1f2937' }}>
+        <h3 style={{ fontSize: '18px', marginBottom: '15px', color: '#1f2937' }}>
           Sagans ingredienser:
         </h3>
-        <div style={{ lineHeight: '2', fontSize: '16px', color: '#374151' }}>
-          <p><strong>Huvudkaraktär:</strong> {storyData.character?.emoji} {storyData.character?.name}</p>
-          <p><strong>Magiskt föremål:</strong> {storyData.item?.emoji} {storyData.item?.name}</p>
-          <p><strong>Plats:</strong> {storyData.location?.emoji} {storyData.location?.name}</p>
-          <p><strong>Stämning:</strong> {storyData.mood?.emoji} {storyData.mood?.name}</p>
-          <p><strong>Äventyr:</strong> {storyData.conflict?.emoji} {storyData.conflict?.name}</p>
+        <div style={{ lineHeight: '1.6', fontSize: '14px', color: '#374151' }}>
+          <p style={{ margin: '4px 0' }}><strong>Huvudkaraktär:</strong> {storyData.character?.emoji} {storyData.character?.name}</p>
+          <p style={{ margin: '4px 0' }}><strong>Magiskt föremål:</strong> {storyData.item?.emoji} {storyData.item?.name}</p>
+          <p style={{ margin: '4px 0' }}><strong>Plats:</strong> {storyData.location?.emoji} {storyData.location?.name}</p>
+          <p style={{ margin: '4px 0' }}><strong>Stämning:</strong> {storyData.mood?.emoji} {storyData.mood?.name}</p>
+          <p style={{ margin: '4px 0' }}><strong>Äventyr:</strong> {storyData.conflict?.emoji} {storyData.conflict?.name}</p>
         </div>
       </div>
       
@@ -466,36 +512,62 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
         display: 'flex', 
         gap: '20px', 
         justifyContent: 'center',
-        flexWrap: 'wrap'
+        flexWrap: 'wrap',
+        width: '100%',
+        maxWidth: '600px'
       }}>
         <button 
           style={{
-            ...buttonStyle,
-            width: '300px',
-            height: 'auto',
-            padding: '20px',
             backgroundColor: '#3b82f6',
-            color: 'white'
+            color: 'white',
+            border: 'none',
+            borderRadius: '12px',
+            padding: '20px',
+            fontSize: '18px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+            transition: 'all 0.3s ease',
+            width: '290px',
+            height: '100px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center'
           }}
           onMouseEnter={(e) => {
-            e.target.style.transform = 'translateY(-3px)'
-            e.target.style.backgroundColor = '#2563eb'
+            e.currentTarget.style.transform = 'translateY(-3px)'
+            e.currentTarget.style.backgroundColor = '#2563eb'
           }}
           onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0)'
-            e.target.style.backgroundColor = '#3b82f6'
+            e.currentTarget.style.transform = 'translateY(0)'
+            e.currentTarget.style.backgroundColor = '#3b82f6'
           }}
         >
-          <div style={{ fontSize: '32px', marginBottom: '10px' }}>🪄</div>
+          <div style={{ fontSize: '32px', marginBottom: '8px' }}>🪄</div>
           <div>Skapa saga nu!</div>
         </button>
         
         <button 
           style={{
-            ...buttonStyle,
-            width: '300px',
-            height: 'auto',
-            padding: '20px'
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            border: 'none',
+            borderRadius: '12px',
+            padding: '20px',
+            fontSize: '18px',
+            fontWeight: '600',
+            color: '#1f2937',
+            cursor: 'pointer',
+            boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+            transition: 'all 0.3s ease',
+            width: '290px',
+            height: '100px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center'
           }}
           onClick={() => {
             setStoryStep('character')
@@ -508,19 +580,19 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
             })
           }}
           onMouseEnter={(e) => {
-            e.target.style.transform = 'translateY(-3px)'
-            e.target.style.boxShadow = '0 15px 30px rgba(0,0,0,0.2)'
+            e.currentTarget.style.transform = 'translateY(-3px)'
+            e.currentTarget.style.boxShadow = '0 12px 25px rgba(0,0,0,0.15)'
           }}
           onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0)'
-            e.target.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
+            e.currentTarget.style.transform = 'translateY(0)'
+            e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.1)'
           }}
         >
-          <div style={{ fontSize: '32px', marginBottom: '10px' }}>🔄</div>
+          <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔄</div>
           <div>Börja om</div>
         </button>
       </div>
-    </>
+    </div>
   )
 
   const renderNySagaView = () => (

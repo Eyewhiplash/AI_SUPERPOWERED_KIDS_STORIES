@@ -35,7 +35,8 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
     paddingBottom: '60px',
     margin: 0,
     width: '100vw',
-    transition: 'all 0.5s ease'
+    transition: 'all 0.5s ease',
+    
   }
 
   const containerStyle = {
@@ -47,63 +48,92 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
   }
 
   const titleStyle = {
-    fontSize: '48px',
+    fontSize: '32px',
     color: currentTheme.textColor,
-    marginBottom: '16px',
+    marginBottom: '10px',
     fontWeight: '700',
-    textShadow: selectedTheme === 'space' || selectedTheme === 'ocean' ? '2px 2px 4px rgba(0,0,0,0.3)' : 'none'
+    textShadow: selectedTheme === 'space' || selectedTheme === 'ocean' ? '2px 2px 4px rgba(0,0,0,0.3)' : 'none',
+    fontFamily: 'Comic Sans MS, cursive'
   }
 
   const subtitleStyle = {
     fontSize: '20px',
     color: currentTheme.textColor,
-    marginBottom: '40px',
+    marginBottom: '20px',
     opacity: 0.8,
-    fontWeight: '400'
+    fontWeight: '400',
+    fontFamily: 'Comic Sans MS, cursive'
   }
 
   const cardContainerStyle = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+    display: 'flex',
+    justifyContent: 'center',
     gap: '24px',
-    marginTop: '60px'
+    marginTop: '60px',
+    flexWrap: 'wrap'
   }
 
   const cardStyle = {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: '16px',
-    padding: '32px 24px',
-    boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-    transition: 'all 0.3s ease',
+    border: 'none',
+    borderRadius: '12px',
+    padding: '20px',
+    fontSize: '16px',
+    fontWeight: '600',
+    color: '#1f2937',
     cursor: 'pointer',
+    margin: '0',
+    boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+    transition: 'all 0.3s ease',
+    width: '280px',
+    height: '180px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    textAlign: 'center',
     backdropFilter: 'blur(10px)',
     border: '1px solid rgba(255, 255, 255, 0.2)'
   }
 
   const cardTitleStyle = {
-    fontSize: '24px',
+    fontSize: '16px',
     color: '#1f2937',
-    marginBottom: '12px',
-    fontWeight: '600'
+    marginBottom: '6px',
+    fontWeight: '700',
+    backgroundColor: 'transparent',
+    border: 'none',
+    padding: '0',
+    margin: '0 0 6px 0'
   }
 
   const cardTextStyle = {
-    fontSize: '16px',
-    color: '#4b5563',
-    lineHeight: '1.6'
+    fontSize: '12px',
+    color: '#6b7280',
+    lineHeight: '1.3',
+    backgroundColor: 'transparent !important',
+    border: 'none',
+    padding: '0',
+    margin: '0',
+    boxShadow: 'none',
+    outline: 'none'
   }
 
   const emojiStyle = {
-    fontSize: '48px',
-    marginBottom: '16px',
-    display: 'block'
+    fontSize: '32px',
+    marginBottom: '10px',
+    display: 'block',
+    backgroundColor: 'transparent',
+    border: 'none',
+    padding: '0',
+    margin: '0 0 10px 0'
   }
 
   return (
     <div style={mainStyle}>
       <div style={containerStyle}>
-        <h1 style={titleStyle}>AI Berättelser för Barn</h1>
-        <p style={subtitleStyle}>Skapa magiska äventyr med artificiell intelligens</p>
+        <div style={titleStyle}>AI Berättelser för Barn</div>
+        <div style={subtitleStyle}>Skapa magiska äventyr med artificiell intelligens</div>
         
         <div style={cardContainerStyle}>
           <div 
@@ -118,11 +148,41 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
               e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)'
             }}
           >
-            <span style={emojiStyle}>📚</span>
-            <h3 style={cardTitleStyle}>Sagor</h3>
-            <p style={cardTextStyle}>
+            <div style={{ 
+              fontSize: '32px', 
+              marginBottom: '10px',
+              backgroundColor: 'transparent',
+              border: 'none',
+              padding: '0',
+              margin: '0 0 10px 0',
+              fontFamily: 'Comic Sans MS, cursive'
+            }}>📚</div>
+            <div style={{ 
+              fontSize: '16px', 
+              fontWeight: '700', 
+              marginBottom: '6px',
+              backgroundColor: 'transparent',
+              border: 'none',
+              padding: '0',
+              margin: '0 0 6px 0',
+              fontFamily: 'Comic Sans MS, cursive'
+            }}>
+              Sagor
+            </div>
+            <div style={{ 
+              fontSize: '12px', 
+              color: '#6b7280', 
+              lineHeight: '1.3',
+              backgroundColor: 'transparent !important',
+              border: 'none',
+              padding: '0',
+              margin: '0',
+              boxShadow: 'none',
+              outline: 'none',
+              fontFamily: 'Comic Sans MS, cursive'
+            }}>
               Läs sparade sagor eller skapa nya magiska berättelser för ditt barn
-            </p>
+            </div>
           </div>
 
           <div 
@@ -137,11 +197,41 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
               e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)'
             }}
           >
-            <span style={emojiStyle}>🧮</span>
-            <h3 style={cardTitleStyle}>Miniräknare</h3>
-            <p style={cardTextStyle}>
+            <div style={{ 
+              fontSize: '32px', 
+              marginBottom: '10px',
+              backgroundColor: 'transparent',
+              border: 'none',
+              padding: '0',
+              margin: '0 0 10px 0',
+              fontFamily: 'Comic Sans MS, cursive'
+            }}>🧮</div>
+            <div style={{ 
+              fontSize: '16px', 
+              fontWeight: '700', 
+              marginBottom: '6px',
+              backgroundColor: 'transparent',
+              border: 'none',
+              padding: '0',
+              margin: '0 0 6px 0',
+              fontFamily: 'Comic Sans MS, cursive'
+            }}>
+              Miniräknare
+            </div>
+            <div style={{ 
+              fontSize: '12px', 
+              color: '#6b7280', 
+              lineHeight: '1.3',
+              backgroundColor: 'transparent !important',
+              border: 'none',
+              padding: '0',
+              margin: '0',
+              boxShadow: 'none',
+              outline: 'none',
+              fontFamily: 'Comic Sans MS, cursive'
+            }}>
               Lär dig matematik på ett roligt sätt med färgglad miniräknare
-            </p>
+            </div>
           </div>
 
           <div 
@@ -156,11 +246,41 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
               e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)'
             }}
           >
-            <span style={emojiStyle}>✏️</span>
-            <h3 style={cardTitleStyle}>Ritplatta</h3>
-            <p style={cardTextStyle}>
-              Rita och måla med färger, verktyg och magiska stämplar
-            </p>
+                         <div style={{ 
+               fontSize: '32px', 
+               marginBottom: '10px',
+               backgroundColor: 'transparent',
+               border: 'none',
+               padding: '0',
+               margin: '0 0 10px 0',
+               fontFamily: 'Comic Sans MS, cursive'
+             }}>✏️</div>
+             <div style={{ 
+               fontSize: '16px', 
+               fontWeight: '700', 
+               marginBottom: '6px',
+               backgroundColor: 'transparent',
+               border: 'none',
+               padding: '0',
+               margin: '0 0 6px 0',
+               fontFamily: 'Comic Sans MS, cursive'
+             }}>
+               Ritplatta
+             </div>
+             <div style={{ 
+               fontSize: '12px', 
+               color: '#6b7280', 
+               lineHeight: '1.3',
+               backgroundColor: 'transparent !important',
+               border: 'none',
+               padding: '0',
+               margin: '0',
+               boxShadow: 'none',
+               outline: 'none',
+               fontFamily: 'Comic Sans MS, cursive'
+             }}>
+               Rita och måla med färger, verktyg och magiska stämplar
+             </div>
           </div>
         </div>
       </div>
