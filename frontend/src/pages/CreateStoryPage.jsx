@@ -91,10 +91,10 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
   const mainStyle = {
     minHeight: '100vh',
     background: currentTheme.background,
-    padding: '40px 20px',
+    padding: '120px 20px 20px 20px',
     fontFamily: 'Comic Sans MS, cursive',
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center'
   }
 
@@ -108,17 +108,17 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
   const buttonStyle = {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     border: 'none',
-    borderRadius: '16px',
-    padding: '60px 60px',
-    fontSize: '18px',
+    borderRadius: '12px',
+    padding: '20px',
+    fontSize: '16px',
     fontWeight: '600',
     color: '#1f2937',
     cursor: 'pointer',
     margin: '0',
-    boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+    boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
     transition: 'all 0.3s ease',
-    width: '400px',
-    height: '250px',
+    width: '280px',
+    height: '180px',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -130,18 +130,19 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
 
   const gridStyle = {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))',
-    gap: '24px',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+    gap: '20px',
     maxWidth: '1200px',
     margin: '0 auto',
-    padding: '0 20px'
+    padding: '0 20px',
+    justifyItems: 'center'
   }
 
   const titleStyle = {
-    fontSize: '32px',
+    fontSize: '28px',
     fontWeight: '700',
     color: currentTheme.textColor,
-    marginBottom: '40px',
+    marginBottom: '20px',
     textAlign: 'center'
   }
 
@@ -172,9 +173,9 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
         flexDirection: 'row', 
         alignItems: 'center', 
         justifyContent: 'center',
-        gap: '24px',
+        gap: '20px',
         flexWrap: 'nowrap',
-        maxWidth: '1000px',
+        maxWidth: '600px',
         margin: '0 auto'
       }}>
         <button 
@@ -189,9 +190,9 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
             e.target.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
           }}
         >
-          <div style={{ fontSize: '48px', marginBottom: '10px' }}>📖</div>
+          <div style={{ fontSize: '32px', marginBottom: '8px' }}>📖</div>
           <div>Bibliotek</div>
-          <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '5px' }}>
+          <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
             Läs sparade & universella sagor
           </div>
         </button>
@@ -218,9 +219,9 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
             e.target.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
           }}
         >
-          <div style={{ fontSize: '48px', marginBottom: '10px' }}>✨</div>
+          <div style={{ fontSize: '32px', marginBottom: '8px' }}>✨</div>
           <div>Ny saga</div>
-          <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '5px' }}>
+          <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
             Skapa en ny magisk berättelse
           </div>
         </button>
@@ -235,9 +236,9 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
         flexDirection: 'row', 
         alignItems: 'center', 
         justifyContent: 'center',
-        gap: '24px',
+        gap: '20px',
         flexWrap: 'nowrap',
-        maxWidth: '1000px',
+        maxWidth: '600px',
         margin: '0 auto'
       }}>
         <button 
@@ -252,9 +253,9 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
             e.target.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
           }}
         >
-          <div style={{ fontSize: '48px', marginBottom: '10px' }}>💾</div>
+          <div style={{ fontSize: '32px', marginBottom: '8px' }}>💾</div>
           <div>Sparade sagor</div>
-          <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '5px' }}>
+          <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
             Dina egna skapade berättelser
           </div>
         </button>
@@ -271,9 +272,9 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
             e.target.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
           }}
         >
-          <div style={{ fontSize: '48px', marginBottom: '10px' }}>🌟</div>
+          <div style={{ fontSize: '32px', marginBottom: '8px' }}>🌟</div>
           <div>Universella sagor</div>
-          <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '5px' }}>
+          <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
             Klassiska sagor för alla barn
           </div>
         </button>
@@ -364,9 +365,9 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
         )}
         <h2 style={titleStyle}>{title}</h2>
         <p style={{ 
-          fontSize: '18px', 
+          fontSize: '16px', 
           color: currentTheme.textColor, 
-          marginBottom: '40px',
+          marginBottom: '20px',
           opacity: 0.8
         }}>
           {subtitle}
@@ -386,13 +387,13 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
                 e.target.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
               }}
             >
-              <div style={{ fontSize: '48px', marginBottom: '15px' }}>{option.emoji}</div>
-              <div style={{ fontSize: '20px', fontWeight: '700', marginBottom: '8px' }}>
-                {option.name}
-              </div>
-              <div style={{ fontSize: '14px', color: '#6b7280', lineHeight: '1.4' }}>
-                {option.description}
-              </div>
+                             <div style={{ fontSize: '32px', marginBottom: '10px' }}>{option.emoji}</div>
+               <div style={{ fontSize: '16px', fontWeight: '700', marginBottom: '6px' }}>
+                 {option.name}
+               </div>
+               <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '1.3' }}>
+                 {option.description}
+               </div>
             </button>
           ))}
         </div>
