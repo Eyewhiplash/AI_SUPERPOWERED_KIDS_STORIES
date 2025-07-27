@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 
 const themes = {
   candy: {
@@ -26,9 +27,18 @@ const themes = {
 
 const LoginPage = ({ selectedTheme = 'candy' }) => {
   const navigate = useNavigate()
+  const { login, loading, error, isAuthenticated } = useAuth()
   const currentTheme = themes[selectedTheme] || themes.candy
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [loginError, setLoginError] = useState('')
+
+  // Redirect if already authenticated
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/')
+    }
+  }, [isAuthenticated, navigate])
 
   const mainStyle = {
     minHeight: '100vh',
@@ -41,33 +51,39 @@ const LoginPage = ({ selectedTheme = 'candy' }) => {
 
   const containerStyle = {
     backgroundColor: 'white',
-    borderRadius: '12px',
+    borderRadius: '16px',
     boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
-    padding: '16px',
+    padding: '32px',
     minWidth: '420px',
+    maxWidth: '500px',
+    width: '90%',
     textAlign: 'left'
   }
 
   const inputStyle = {
     width: '100%',
-    padding: '10px 12px',
-    border: '1px solid #d1d5db',
-    borderRadius: '8px',
-    marginBottom: '12px',
-    fontSize: '14px'
+    padding: '16px 20px',
+    border: '2px solid #d1d5db',
+    borderRadius: '12px',
+    marginBottom: '16px',
+    fontSize: '16px',
+    minHeight: '56px',
+    transition: 'border-color 0.2s ease'
   }
 
   const buttonStyle = {
     backgroundColor: '#3b82f6',
     color: 'white',
-    padding: '10px 20px',
+    padding: '16px 24px',
     border: 'none',
-    borderRadius: '8px',
+    borderRadius: '12px',
     cursor: 'pointer',
-    fontSize: '14px',
+    fontSize: '16px',
     width: '100%',
-    marginBottom: '12px',
-    fontWeight: '500'
+    marginBottom: '16px',
+    fontWeight: '600',
+    minHeight: '56px',
+    transition: 'all 0.2s ease'
   }
 
   const linkButtonStyle = {
@@ -80,52 +96,92 @@ const LoginPage = ({ selectedTheme = 'candy' }) => {
     marginTop: '4px'
   }
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault()
-    // Här kommer login logik senare
-    console.log('Login:', { username, password })
-    // För nu, gå bara till startsidan
-    navigate('/')
+    setLoginError('')
+    
+    try {
+      const result = await login(username, password)
+      if (result.success) {
+        navigate('/')
+      } else {
+        setLoginError(result.error || 'Inloggning misslyckades')
+      }
+    } catch (err) {
+      setLoginError('Ett fel inträffade vid inloggning')
+    }
   }
 
   return (
     <div style={mainStyle}>
       <div style={containerStyle}>
         <form onSubmit={handleLogin}>
-          <h3 style={{margin: '0 0 16px 0', fontSize: '16px', fontWeight: '600', color: '#111827'}}>
-            Logga in
+          <h3 style={{margin: '0 0 24px 0', fontSize: '24px', fontWeight: '700', color: '#111827', textAlign: 'center'}}>
+            🔐 Logga in
           </h3>
           
-          <div style={{marginBottom: '12px'}}>
-            <label style={{display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#374151'}}>
+          {loginError && (
+            <div style={{
+              backgroundColor: '#fef2f2',
+              border: '2px solid #fecaca',
+              color: '#dc2626',
+              padding: '16px',
+              borderRadius: '12px',
+              marginBottom: '20px',
+              textAlign: 'center',
+              fontSize: '16px'
+            }}>
+              {loginError}
+            </div>
+          )}
+          
+          <div style={{marginBottom: '20px'}}>
+            <label style={{display: 'block', marginBottom: '8px', fontSize: '16px', fontWeight: '600', color: '#374151'}}>
               Användarnamn
             </label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              style={inputStyle}
+              style={{
+                ...inputStyle,
+                borderColor: username ? '#10b981' : '#d1d5db'
+              }}
               placeholder="Ange användarnamn"
               required
+              disabled={loading}
             />
           </div>
           
-          <div style={{marginBottom: '16px'}}>
-            <label style={{display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#374151'}}>
+          <div style={{marginBottom: '24px'}}>
+            <label style={{display: 'block', marginBottom: '8px', fontSize: '16px', fontWeight: '600', color: '#374151'}}>
               Lösenord
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              style={inputStyle}
+              style={{
+                ...inputStyle,
+                borderColor: password ? '#10b981' : '#d1d5db'
+              }}
               placeholder="Ange lösenord"
               required
+              disabled={loading}
             />
           </div>
           
-          <button type="submit" style={buttonStyle}>
-            Logga in
+          <button 
+            type="submit" 
+            style={{
+              ...buttonStyle,
+              opacity: loading ? 0.6 : 1,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              backgroundColor: loading ? '#9ca3af' : '#3b82f6'
+            }}
+            disabled={loading}
+          >
+            {loading ? '⏳ Loggar in...' : '🔐 Logga in'}
           </button>
           
           <div style={{textAlign: 'center', paddingTop: '8px', borderTop: '1px solid #e5e7eb'}}>

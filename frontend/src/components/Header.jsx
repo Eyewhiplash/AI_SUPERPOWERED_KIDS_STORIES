@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 
 const themes = {
   candy: {
@@ -36,10 +37,12 @@ const themes = {
 
 const Header = ({ selectedTheme = 'candy', setSelectedTheme }) => {
   const navigate = useNavigate()
+  const { user, login, logout, loading, error, clearError, isAuthenticated } = useAuth()
   const [showLogin, setShowLogin] = useState(false)
   const [showThemes, setShowThemes] = useState(false)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [loginError, setLoginError] = useState('')
   const loginDropdownRef = useRef(null)
   const themesDropdownRef = useRef(null)
 
@@ -153,10 +156,27 @@ const Header = ({ selectedTheme = 'candy', setSelectedTheme }) => {
     }
   }, [showLogin, showThemes])
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault()
-    console.log('Login:', { username, password })
-    setShowLogin(false)
+    setLoginError('')
+    
+    try {
+      const result = await login(username, password)
+      if (result.success) {
+        setShowLogin(false)
+        setUsername('')
+        setPassword('')
+      } else {
+        setLoginError(result.error || 'Inloggning misslyckades')
+      }
+    } catch (err) {
+      setLoginError('Ett fel inträffade vid inloggning')
+    }
+  }
+
+  const handleLogout = () => {
+    logout()
+    navigate('/')
   }
 
   const handleThemeSelect = (themeKey) => {
@@ -221,21 +241,56 @@ const Header = ({ selectedTheme = 'candy', setSelectedTheme }) => {
           <h1 style={logoStyle}>AI Stories</h1>
           
           <div style={{position: 'relative'}} ref={loginDropdownRef}>
-            <button 
-              style={buttonStyle}
-              onClick={() => setShowLogin(!showLogin)}
-              onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.9)'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.7)'}
-            >
-              🔐 Logga in
-            </button>
+            {!isAuthenticated ? (
+              <button 
+                style={buttonStyle}
+                onClick={() => setShowLogin(!showLogin)}
+                onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.9)'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.7)'}
+              >
+                🔐 Logga in
+              </button>
+            ) : (
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button 
+                  style={buttonStyle}
+                  onClick={() => navigate('/settings')}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.9)'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.7)'}
+                >
+                  ⚙️ Inställningar
+                </button>
+                <button 
+                  style={buttonStyle}
+                  onClick={handleLogout}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.9)'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.7)'}
+                >
+                  🚪 Logga ut
+                </button>
+              </div>
+            )}
             
-            {showLogin && (
+            {showLogin && !isAuthenticated && (
               <div style={{...dropdownStyle, right: 0}}>
                 <form onSubmit={handleLogin}>
                   <h3 style={{margin: '0 0 16px 0', fontSize: '16px', fontWeight: '600', color: '#111827'}}>
                     Logga in
                   </h3>
+                  
+                  {loginError && (
+                    <div style={{
+                      backgroundColor: '#fef2f2',
+                      border: '1px solid #fecaca',
+                      color: '#dc2626',
+                      padding: '8px',
+                      borderRadius: '6px',
+                      marginBottom: '12px',
+                      fontSize: '14px'
+                    }}>
+                      {loginError}
+                    </div>
+                  )}
                   
                   <div style={{marginBottom: '12px'}}>
                     <label style={{display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#374151'}}>
@@ -247,6 +302,7 @@ const Header = ({ selectedTheme = 'candy', setSelectedTheme }) => {
                       onChange={(e) => setUsername(e.target.value)}
                       style={inputStyle}
                       placeholder="Ange användarnamn"
+                      disabled={loading}
                     />
                   </div>
                   
@@ -260,11 +316,20 @@ const Header = ({ selectedTheme = 'candy', setSelectedTheme }) => {
                       onChange={(e) => setPassword(e.target.value)}
                       style={inputStyle}
                       placeholder="Ange lösenord"
+                      disabled={loading}
                     />
                   </div>
                   
-                  <button type="submit" style={submitButtonStyle}>
-                    Logga in
+                  <button 
+                    type="submit" 
+                    style={{
+                      ...submitButtonStyle,
+                      opacity: loading ? 0.6 : 1,
+                      cursor: loading ? 'not-allowed' : 'pointer'
+                    }}
+                    disabled={loading}
+                  >
+                    {loading ? 'Loggar in...' : 'Logga in'}
                   </button>
                   
                   <div style={{textAlign: 'center', paddingTop: '8px', borderTop: '1px solid #e5e7eb'}}>
@@ -287,6 +352,7 @@ const Header = ({ selectedTheme = 'candy', setSelectedTheme }) => {
                         setShowLogin(false)
                         navigate('/register')
                       }}
+                      disabled={loading}
                     >
                       Registrera dig här
                     </button>

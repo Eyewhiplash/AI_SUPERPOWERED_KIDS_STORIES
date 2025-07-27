@@ -345,7 +345,6 @@ const DrawingPage = ({ selectedTheme = 'candy' }) => {
           color: currentTheme.textColor,
           margin: '0 0 20px 0',
           fontWeight: '700',
-          fontFamily: 'Comic Sans MS, cursive',
           textAlign: 'center'
         }}>
           🎨 Magisk Målarbok
@@ -377,8 +376,7 @@ const DrawingPage = ({ selectedTheme = 'candy' }) => {
                 fontSize: '18px',
                 fontWeight: '700',
                 marginBottom: '15px',
-                color: '#333',
-                fontFamily: 'Comic Sans MS, cursive'
+                color: '#333'
               }}>
                 🛠️ Verktyg
               </h2>
@@ -404,8 +402,7 @@ const DrawingPage = ({ selectedTheme = 'candy' }) => {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      transition: 'all 0.2s ease',
-                      fontFamily: 'Comic Sans MS, cursive'
+                      transition: 'all 0.2s ease'
                     }}
                     title={t.name}
                   >
@@ -433,8 +430,7 @@ const DrawingPage = ({ selectedTheme = 'candy' }) => {
                 fontSize: '18px',
                 fontWeight: '700',
                 marginBottom: '15px',
-                color: '#333',
-                fontFamily: 'Comic Sans MS, cursive'
+                color: '#333'
               }}>
                 🎨 Färger
               </h2>
@@ -512,8 +508,7 @@ const DrawingPage = ({ selectedTheme = 'candy' }) => {
             }}>
               <span style={{
                 fontSize: '14px',
-                fontWeight: '600',
-                fontFamily: 'Comic Sans MS, cursive'
+                fontWeight: '600'
               }}>
                 📏 Storlek:
               </span>
@@ -546,8 +541,7 @@ const DrawingPage = ({ selectedTheme = 'candy' }) => {
                 borderRadius: '8px',
                 cursor: historyIndex <= 0 ? 'not-allowed' : 'pointer',
                 fontSize: '14px',
-                fontWeight: '600',
-                fontFamily: 'Comic Sans MS, cursive'
+                fontWeight: '600'
               }}
             >
               ↶ Ångra
@@ -564,8 +558,7 @@ const DrawingPage = ({ selectedTheme = 'candy' }) => {
                 borderRadius: '8px',
                 cursor: historyIndex >= history.length - 1 ? 'not-allowed' : 'pointer',
                 fontSize: '14px',
-                fontWeight: '600',
-                fontFamily: 'Comic Sans MS, cursive'
+                fontWeight: '600'
               }}
             >
               ↷ Gör om
@@ -581,8 +574,7 @@ const DrawingPage = ({ selectedTheme = 'candy' }) => {
                 borderRadius: '8px',
                 cursor: 'pointer',
                 fontSize: '14px',
-                fontWeight: '600',
-                fontFamily: 'Comic Sans MS, cursive'
+                fontWeight: '600'
               }}
             >
               🗑️ Rensa

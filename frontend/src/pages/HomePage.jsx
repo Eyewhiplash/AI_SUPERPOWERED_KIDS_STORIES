@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 
 const themes = {
   candy: {
@@ -26,6 +27,7 @@ const themes = {
 
 const HomePage = ({ selectedTheme = 'candy' }) => {
   const navigate = useNavigate()
+  const { isAuthenticated } = useAuth()
   const currentTheme = themes[selectedTheme] || themes.candy
 
   const mainStyle = {
@@ -52,8 +54,7 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
     color: currentTheme.textColor,
     marginBottom: '10px',
     fontWeight: '700',
-    textShadow: selectedTheme === 'space' || selectedTheme === 'ocean' ? '2px 2px 4px rgba(0,0,0,0.3)' : 'none',
-    fontFamily: 'Comic Sans MS, cursive'
+    textShadow: selectedTheme === 'space' || selectedTheme === 'ocean' ? '2px 2px 4px rgba(0,0,0,0.3)' : 'none'
   }
 
   const subtitleStyle = {
@@ -61,23 +62,23 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
     color: currentTheme.textColor,
     marginBottom: '20px',
     opacity: 0.8,
-    fontWeight: '400',
-    fontFamily: 'Comic Sans MS, cursive'
+    fontWeight: '400'
   }
 
   const cardContainerStyle = {
-    display: 'flex',
-    justifyContent: 'center',
-    gap: '24px',
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+    gap: '32px',
     marginTop: '60px',
-    flexWrap: 'wrap'
+    maxWidth: '1000px',
+    margin: '60px auto 0 auto',
+    padding: '0 20px'
   }
 
   const cardStyle = {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    border: 'none',
-    borderRadius: '12px',
-    padding: '20px',
+    borderRadius: '16px',
+    padding: '24px',
     fontSize: '16px',
     fontWeight: '600',
     color: '#1f2937',
@@ -85,15 +86,17 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
     margin: '0',
     boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
     transition: 'all 0.3s ease',
-    width: '280px',
-    height: '180px',
+    width: '300px',
+    minHeight: '200px',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
     textAlign: 'center',
     backdropFilter: 'blur(10px)',
-    border: '1px solid rgba(255, 255, 255, 0.2)'
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    userSelect: 'none',
+    WebkitUserSelect: 'none'
   }
 
   const cardTitleStyle = {
@@ -137,15 +140,29 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
         
         <div style={cardContainerStyle}>
           <div 
-            style={cardStyle}
-            onClick={() => navigate('/create-story')}
+            style={{
+              ...cardStyle,
+              opacity: !isAuthenticated ? 0.5 : 1,
+              cursor: !isAuthenticated ? 'not-allowed' : 'pointer'
+            }}
+            onClick={() => {
+              if (isAuthenticated) {
+                navigate('/create-story')
+              } else {
+                alert('Du måste logga in för att skapa sagor!')
+              }
+            }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-8px)'
-              e.currentTarget.style.boxShadow = '0 15px 35px rgba(0,0,0,0.15)'
+              if (isAuthenticated) {
+                e.currentTarget.style.transform = 'translateY(-8px)'
+                e.currentTarget.style.boxShadow = '0 15px 35px rgba(0,0,0,0.15)'
+              }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)'
+              if (isAuthenticated) {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)'
+              }
             }}
           >
             <div style={{ 
@@ -154,8 +171,7 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
               backgroundColor: 'transparent',
               border: 'none',
               padding: '0',
-              margin: '0 0 10px 0',
-              fontFamily: 'Comic Sans MS, cursive'
+              margin: '0 0 10px 0'
             }}>📚</div>
             <div style={{ 
               fontSize: '16px', 
@@ -164,8 +180,7 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
               backgroundColor: 'transparent',
               border: 'none',
               padding: '0',
-              margin: '0 0 6px 0',
-              fontFamily: 'Comic Sans MS, cursive'
+              margin: '0 0 6px 0'
             }}>
               Sagor
             </div>
@@ -178,10 +193,12 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
               padding: '0',
               margin: '0',
               boxShadow: 'none',
-              outline: 'none',
-              fontFamily: 'Comic Sans MS, cursive'
+              outline: 'none'
             }}>
-              Läs sparade sagor eller skapa nya magiska berättelser för ditt barn
+              {isAuthenticated 
+                ? 'Läs sparade sagor eller skapa nya magiska berättelser för ditt barn'
+                : 'Logga in för att skapa och läsa sagor'
+              }
             </div>
           </div>
 
@@ -203,8 +220,7 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
               backgroundColor: 'transparent',
               border: 'none',
               padding: '0',
-              margin: '0 0 10px 0',
-              fontFamily: 'Comic Sans MS, cursive'
+              margin: '0 0 10px 0'
             }}>🧮</div>
             <div style={{ 
               fontSize: '16px', 
@@ -213,8 +229,7 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
               backgroundColor: 'transparent',
               border: 'none',
               padding: '0',
-              margin: '0 0 6px 0',
-              fontFamily: 'Comic Sans MS, cursive'
+              margin: '0 0 6px 0'
             }}>
               Miniräknare
             </div>
@@ -227,8 +242,7 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
               padding: '0',
               margin: '0',
               boxShadow: 'none',
-              outline: 'none',
-              fontFamily: 'Comic Sans MS, cursive'
+              outline: 'none'
             }}>
               Lär dig matematik på ett roligt sätt med färgglad miniräknare
             </div>
@@ -252,8 +266,7 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
                backgroundColor: 'transparent',
                border: 'none',
                padding: '0',
-               margin: '0 0 10px 0',
-               fontFamily: 'Comic Sans MS, cursive'
+               margin: '0 0 10px 0'
              }}>✏️</div>
              <div style={{ 
                fontSize: '16px', 
@@ -262,8 +275,7 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
                backgroundColor: 'transparent',
                border: 'none',
                padding: '0',
-               margin: '0 0 6px 0',
-               fontFamily: 'Comic Sans MS, cursive'
+               margin: '0 0 6px 0'
              }}>
                Ritplatta
              </div>
@@ -276,8 +288,7 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
                padding: '0',
                margin: '0',
                boxShadow: 'none',
-               outline: 'none',
-               fontFamily: 'Comic Sans MS, cursive'
+               outline: 'none'
              }}>
                Rita och måla med färger, verktyg och magiska stämplar
              </div>

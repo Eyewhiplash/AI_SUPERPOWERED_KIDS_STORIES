@@ -295,7 +295,7 @@ const CalculatorPage = ({ selectedTheme = 'candy' }) => {
 
   const containerStyle = {
     width: '100%',
-    maxWidth: '400px',
+    maxWidth: '420px',
     margin: '0 auto',
     padding: '40px 20px',
     textAlign: 'center'
@@ -333,20 +333,23 @@ const CalculatorPage = ({ selectedTheme = 'candy' }) => {
   const buttonGridStyle = {
     display: 'grid',
     gridTemplateColumns: 'repeat(4, 1fr)',
-    gap: '8px'
+    gap: '10px'
   }
 
   const buttonStyle = {
     backgroundColor: '#f3f4f6',
     border: 'none',
     borderRadius: '12px',
-    padding: '12px',
+    padding: '14px',
     fontSize: '18px',
     fontWeight: '600',
     color: '#1f2937',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
-    minHeight: '50px'
+    minHeight: '52px',
+    userSelect: 'none',
+    WebkitUserSelect: 'none',
+    WebkitTapHighlightColor: 'transparent'
   }
 
   const musicalButtonStyle = {

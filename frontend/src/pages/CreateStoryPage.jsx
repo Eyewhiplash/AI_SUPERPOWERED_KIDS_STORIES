@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 
 const themes = {
   candy: {
@@ -77,7 +78,15 @@ const conflicts = [
 
 const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
   const navigate = useNavigate()
+  const { isAuthenticated } = useAuth()
   const currentTheme = themes[selectedTheme] || themes.candy
+
+  // Redirect if not authenticated
+  React.useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/')
+    }
+  }, [isAuthenticated, navigate])
   const [currentView, setCurrentView] = useState('main') // 'main', 'bibliotek', 'ny-saga', 'sparade-sagor', 'universella-sagor'
   const [storyStep, setStoryStep] = useState('character') // 'character', 'items', 'location', 'mood', 'conflict', 'generate'
   const [storyData, setStoryData] = useState({
@@ -92,7 +101,6 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
     minHeight: '100vh',
     background: currentTheme.background,
     padding: '0 20px 60px 20px',
-    fontFamily: 'Comic Sans MS, cursive',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center'
@@ -111,9 +119,8 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
 
   const buttonStyle = {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    border: 'none',
-    borderRadius: '12px',
-    padding: '20px',
+    borderRadius: '16px',
+    padding: '24px',
     fontSize: '16px',
     fontWeight: '600',
     color: '#1f2937',
@@ -121,15 +128,17 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
     margin: '0',
     boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
     transition: 'all 0.3s ease',
-    width: '280px',
-    height: '180px',
+    width: '320px',
+    minHeight: '200px',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
     textAlign: 'center',
     backdropFilter: 'blur(10px)',
-    border: '1px solid rgba(255, 255, 255, 0.2)'
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    userSelect: 'none',
+    WebkitUserSelect: 'none'
   }
 
   const gridStyle = {
@@ -196,9 +205,9 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
             e.target.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
           }}
         >
-          <div style={{ fontSize: '32px', marginBottom: '10px', fontFamily: 'Comic Sans MS, cursive' }}>📖</div>
-          <div style={{ fontSize: '16px', fontWeight: '700', marginBottom: '6px', fontFamily: 'Comic Sans MS, cursive' }}>Bibliotek</div>
-          <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '1.3', fontFamily: 'Comic Sans MS, cursive' }}>
+                          <div style={{ fontSize: '32px', marginBottom: '10px' }}>📖</div>
+                <div style={{ fontSize: '16px', fontWeight: '700', marginBottom: '6px' }}>Bibliotek</div>
+                <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '1.3' }}>
             Läs sparade & universella sagor
           </div>
         </button>
@@ -225,9 +234,9 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
             e.target.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
           }}
         >
-          <div style={{ fontSize: '32px', marginBottom: '10px', fontFamily: 'Comic Sans MS, cursive' }}>✨</div>
-          <div style={{ fontSize: '16px', fontWeight: '700', marginBottom: '6px', fontFamily: 'Comic Sans MS, cursive' }}>Ny saga</div>
-          <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '1.3', fontFamily: 'Comic Sans MS, cursive' }}>
+                          <div style={{ fontSize: '32px', marginBottom: '10px' }}>✨</div>
+                <div style={{ fontSize: '16px', fontWeight: '700', marginBottom: '6px' }}>Ny saga</div>
+                <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '1.3' }}>
             Skapa en ny magisk berättelse
           </div>
         </button>
@@ -259,9 +268,9 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
             e.target.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
           }}
         >
-          <div style={{ fontSize: '32px', marginBottom: '10px', fontFamily: 'Comic Sans MS, cursive' }}>💾</div>
-          <div style={{ fontSize: '16px', fontWeight: '700', marginBottom: '6px', fontFamily: 'Comic Sans MS, cursive' }}>Sparade sagor</div>
-          <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '1.3', fontFamily: 'Comic Sans MS, cursive' }}>
+                          <div style={{ fontSize: '32px', marginBottom: '10px' }}>💾</div>
+                <div style={{ fontSize: '16px', fontWeight: '700', marginBottom: '6px' }}>Sparade sagor</div>
+                <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '1.3' }}>
             Dina egna skapade berättelser
           </div>
         </button>
@@ -278,9 +287,9 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
             e.target.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
           }}
         >
-          <div style={{ fontSize: '32px', marginBottom: '10px', fontFamily: 'Comic Sans MS, cursive' }}>🌟</div>
-          <div style={{ fontSize: '16px', fontWeight: '700', marginBottom: '6px', fontFamily: 'Comic Sans MS, cursive' }}>Universella sagor</div>
-          <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '1.3', fontFamily: 'Comic Sans MS, cursive' }}>
+                          <div style={{ fontSize: '32px', marginBottom: '10px' }}>🌟</div>
+                <div style={{ fontSize: '16px', fontWeight: '700', marginBottom: '6px' }}>Universella sagor</div>
+                <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '1.3' }}>
             Klassiska sagor för alla barn
           </div>
         </button>
@@ -400,8 +409,7 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
                  backgroundColor: 'transparent',
                  border: 'none',
                  padding: '0',
-                 margin: '0 0 10px 0',
-                 fontFamily: 'Comic Sans MS, cursive'
+                 margin: '0 0 10px 0'
                }}>{option.emoji}</div>
                <div style={{ 
                  fontSize: '16px', 
@@ -410,8 +418,7 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
                  backgroundColor: 'transparent',
                  border: 'none',
                  padding: '0',
-                 margin: '0 0 6px 0',
-                 fontFamily: 'Comic Sans MS, cursive'
+                 margin: '0 0 6px 0'
                }}>
                  {option.name}
                </div>
@@ -424,8 +431,7 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
                  padding: '0',
                  margin: '0',
                  boxShadow: 'none',
-                 outline: 'none',
-                 fontFamily: 'Comic Sans MS, cursive'
+                 outline: 'none'
                }}>
                  {option.description}
                </div>
@@ -635,39 +641,105 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
     </>
   )
 
-  const renderUniversellaSagorView = () => (
-    <>
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        gap: '24px'
-      }}>
-        <div style={{ 
-          backgroundColor: 'rgba(255, 255, 255, 0.9)', 
-          borderRadius: '20px', 
-          padding: '40px',
-          boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
-          textAlign: 'center',
-          width: '400px',
-          height: '250px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          <div style={{ fontSize: '64px', marginBottom: '20px' }}>🌟</div>
-          <p style={{ fontSize: '18px', color: '#1f2937', marginBottom: '15px', fontWeight: '600' }}>
-            Universella sagor
-          </p>
-          <p style={{ fontSize: '16px', color: '#6b7280', lineHeight: '1.5' }}>
-            Klassiska sagor för alla barn kommer snart att finnas här!
+  const renderUniversellaSagorView = () => {
+    const universalStories = [
+      { id: 1, title: 'Askungen', description: 'En klassisk saga om vänlighet och magi', icon: '👸' },
+      { id: 2, title: 'De tre små grisarna', description: 'En berättelse om mod och planering', icon: '🐷' },
+      { id: 3, title: 'Rödluvan', description: 'En spännande vandring genom skogen', icon: '🔴' },
+      { id: 4, title: 'Guldlock och de tre björnarna', description: 'En saga om nyfikenhet och respekt', icon: '🐻' },
+      { id: 5, title: 'Törnrosa', description: 'En magisk berättelse om sömn och kärlek', icon: '🌹' },
+      { id: 6, title: 'Snövit', description: 'En saga om vänskap och ärlighet', icon: '🍎' }
+    ]
+
+    return (
+      <>
+        <div style={{ marginBottom: '32px' }}>
+          <h2 style={{
+            fontSize: '24px',
+            fontWeight: '700',
+            color: currentTheme.textColor,
+            marginBottom: '16px',
+            textAlign: 'center'
+          }}>
+            🌟 Universella sagor
+          </h2>
+          <p style={{
+            fontSize: '16px',
+            color: currentTheme.textColor,
+            opacity: 0.8,
+            textAlign: 'center',
+            marginBottom: '24px'
+          }}>
+            Klassiska sagor som älskats i generationer
           </p>
         </div>
-      </div>
-    </>
-  )
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: '20px',
+          maxWidth: '1200px',
+          width: '100%',
+          margin: '0 auto',
+          padding: '0 20px'
+        }}>
+          {universalStories.map((story) => (
+            <div
+              key={story.id}
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: '16px',
+                padding: '24px',
+                boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                minHeight: '160px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center'
+              }}
+              onClick={() => {
+                // TODO: Open story reader with this universal story
+                alert(`Läser "${story.title}" - kommer snart från backend!`)
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)'
+                e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.15)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
+              }}
+            >
+              <div style={{ fontSize: '48px', marginBottom: '12px' }}>
+                {story.icon}
+              </div>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '700',
+                color: '#1f2937',
+                marginBottom: '8px'
+              }}>
+                {story.title}
+              </h3>
+              <p style={{
+                fontSize: '14px',
+                color: '#6b7280',
+                lineHeight: '1.4',
+                margin: 0
+              }}>
+                {story.description}
+              </p>
+            </div>
+          ))}
+        </div>
+      </>
+    )
+  }
 
   return (
     <div style={mainStyle}>
