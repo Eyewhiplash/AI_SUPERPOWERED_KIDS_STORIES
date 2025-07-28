@@ -1,12 +1,13 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 import psycopg2
 import hashlib
 import os
 from typing import Optional, List
 import json
 from datetime import datetime
+
+from schemas import LoginRequest, RegisterRequest, UpdateSettingsRequest, CreateStoryRequest
 
 app = FastAPI()
 
@@ -27,31 +28,6 @@ def get_db():
         user=os.getenv("DB_USER", "user"),
         password=os.getenv("DB_PASS", "pass")
     )
-
-# Pydantic models
-class LoginRequest(BaseModel):
-    username: str
-    password: str
-
-class RegisterRequest(BaseModel):
-    username: str
-    password: str
-
-class UserSettings(BaseModel):
-    storyAge: Optional[int] = 5
-    storyComplexity: Optional[str] = "medium"
-
-class UpdateSettingsRequest(BaseModel):
-    storyAge: Optional[int] = None
-    storyComplexity: Optional[str] = None
-
-class CreateStoryRequest(BaseModel):
-    title: Optional[str] = None
-    character: Optional[str] = None
-    setting: Optional[str] = None
-    adventure: Optional[str] = None
-    prompt: Optional[str] = None
-    storyType: str = "custom"  # "custom", "character", "universal"
 
 # Hash password
 def hash_password(password: str) -> str:

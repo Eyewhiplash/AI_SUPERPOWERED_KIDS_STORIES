@@ -11,10 +11,7 @@ services:
       - db_data:/var/lib/postgresql/data
 
   api:
-    image: python:3.11
-    working_dir: /app
-    volumes:
-      - .:/app
+    build: .
     ports:
       - "8000:8000"
     environment:
@@ -24,7 +21,7 @@ services:
       DB_PASS: pass
     depends_on:
       - db
-    command: sh -c "pip install -r requirements.txt && uvicorn main:app --host 0.0.0.0 --reload"
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 volumes:
   db_data: 
