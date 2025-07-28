@@ -163,7 +163,7 @@ const Header = ({ selectedTheme = 'candy', setSelectedTheme }) => {
     try {
       const result = await login(username, password)
       if (result.success) {
-        setShowLogin(false)
+    setShowLogin(false)
         setUsername('')
         setPassword('')
       } else {
@@ -242,14 +242,14 @@ const Header = ({ selectedTheme = 'candy', setSelectedTheme }) => {
           
           <div style={{position: 'relative'}} ref={loginDropdownRef}>
             {!isAuthenticated ? (
-              <button 
-                style={buttonStyle}
-                onClick={() => setShowLogin(!showLogin)}
-                onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.9)'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.7)'}
-              >
-                🔐 Logga in
-              </button>
+            <button 
+              style={buttonStyle}
+              onClick={() => setShowLogin(!showLogin)}
+              onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.9)'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.7)'}
+            >
+              🔐 Logga in
+            </button>
             ) : (
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <button 

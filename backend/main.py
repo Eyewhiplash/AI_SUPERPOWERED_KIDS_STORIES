@@ -6,6 +6,7 @@ import os
 from typing import Optional, List
 import json
 from datetime import datetime
+from openai import OpenAI
 
 from schemas import LoginRequest, RegisterRequest, UpdateSettingsRequest, CreateStoryRequest
 
@@ -20,6 +21,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# OpenAI client
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 # Database connection
 def get_db():
     return psycopg2.connect(
@@ -33,15 +37,39 @@ def get_db():
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
-# Generate AI story (placeholder)
+# Generate AI story using OpenAI GPT-4o mini
 def generate_ai_story(prompt: str, age: int, complexity: str) -> str:
-    # TODO: Replace with real OpenAI integration
-    if complexity == "simple":
-        return f"Es war einmal ein {age}-jähriges Kind, das {prompt} entdeckte. Es hatte viele Abenteuer und lebte glücklich bis ans Ende."
-    elif complexity == "advanced":
-        return f"In einem fernen Land lebte ein mutiges {age}-jähriges Kind. Eines Tages entdeckte es {prompt} und begab sich auf eine aufregende Reise voller Herausforderungen, Freundschaften und magischer Momente. Nach vielen Abenteuern kehrte es als Held nach Hause zurück."
-    else:
-        return f"Det var en gång ett {age}-årigt barn som upptäckte {prompt}. Barnet gick på ett spännande äventyr, träffade nya vänner och lärde sig viktiga lärdomar. Till slut kom barnet hem som en sann hjälte."
+    try:
+        # Create age-appropriate system prompt
+        if complexity == "simple":
+            system_prompt = f"Du är en barnboksförfattare som skriver enkla, roliga sagor för {age}-åringar. Använd enkla ord, korta meningar och mycket repetition. Gör sagan kort (3-4 stycken) och glad."
+        elif complexity == "advanced":
+            system_prompt = f"Du är en barnboksförfattare som skriver mer avancerade sagor för {age}-åringar. Använd rikare språk, längre meningar och mer komplexa berättelser. Gör sagan längre (5-7 stycken) med spännande äventyr."
+        else:  # medium
+            system_prompt = f"Du är en barnboksförfattare som skriver sagor för {age}-åringar. Använd lämpligt språk för åldern, blanda enkla och lite mer komplexa ord. Gör sagan medellång (4-5 stycken) med en bra balans av äventyr och lärdom."
+        
+        user_prompt = f"Skriv en saga på svenska om: {prompt}. Gör den lämplig för ett {age}-årigt barn med komplexitet: {complexity}."
+        
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            max_tokens=1000,
+            temperature=0.8
+        )
+        
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        # Fallback if OpenAI fails
+        print(f"OpenAI error: {e}")
+        if complexity == "simple":
+            return f"Es war einmal ein {age}-jähriges Kind, das {prompt} entdeckte. Es hatte viele Abenteuer und lebte glücklich bis ans Ende."
+        elif complexity == "advanced":
+            return f"In einem fernen Land lebte ein mutiges {age}-jähriges Kind. Eines Tages entdeckte es {prompt} och begab sich auf eine aufregende Reise voller Herausforderungen, Freundschaften och magischer Momente. Nach vielen Abenteuern kehrte es als Held nach Hause zurück."
+        else:
+            return f"Det var en gång ett {age}-årigt barn som upptäckte {prompt}. Barnet gick på ett spännande äventyr, träffade nya vänner och lärde sig viktiga lärdomar. Till slut kom barnet hem som en sann hjälte."
 
 @app.get("/")
 def root():

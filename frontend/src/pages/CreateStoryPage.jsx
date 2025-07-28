@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -82,7 +82,7 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
   const currentTheme = themes[selectedTheme] || themes.candy
 
   // Redirect if not authenticated
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isAuthenticated) {
       navigate('/')
     }
@@ -96,14 +96,17 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
     mood: null,
     conflict: null
   })
+  const [isGenerating, setIsGenerating] = useState(false)
 
   const mainStyle = {
-    minHeight: '100vh',
+    minHeight: 'calc(100vh - 120px)',
     background: currentTheme.background,
-    padding: '0 20px 60px 20px',
+    padding: '20px 20px 80px 20px',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    width: '100%',
+    boxSizing: 'border-box'
   }
 
   const containerStyle = {
@@ -128,7 +131,7 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
     margin: '0',
     boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
     transition: 'all 0.3s ease',
-    width: '320px',
+    width: '250px',
     minHeight: '200px',
     display: 'flex',
     flexDirection: 'column',
@@ -138,17 +141,18 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
     backdropFilter: 'blur(10px)',
     border: '1px solid rgba(255, 255, 255, 0.2)',
     userSelect: 'none',
-    WebkitUserSelect: 'none'
+    WebkitUserSelect: 'none',
+    flexShrink: 0
   }
 
   const gridStyle = {
     display: 'grid',
     gridTemplateColumns: 'repeat(4, 1fr)',
-    gap: '20px',
+    gap: '40px',
     maxWidth: '1200px',
     width: '100%',
     margin: '0 auto',
-    padding: '0 20px',
+    padding: '20px',
     justifyItems: 'center',
     alignItems: 'start'
   }
@@ -339,46 +343,44 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
 
     return (
       <>
-        {storyStep !== 'character' && (
-          <div style={{ 
-            display: 'flex',
-            justifyContent: 'flex-start',
-            width: '100%',
-            maxWidth: '1200px',
-            margin: '0 auto 10px',
-            padding: '0 20px'
-          }}>
-            <button
-              onClick={handleBack}
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '6px 12px',
-                fontSize: '14px',
-                fontWeight: '600',
-                color: '#1f2937',
-                cursor: 'pointer',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                transition: 'all 0.3s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-1px)'
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'
-              }}
-            >
-              <span style={{ fontSize: '14px' }}>←</span>
-              <span>Tillbaka</span>
-            </button>
-          </div>
-        )}
+        <div style={{ 
+          display: 'flex',
+          justifyContent: 'flex-start',
+          width: '100%',
+          maxWidth: '1200px',
+          margin: '0 auto 20px',
+          padding: '0 20px'
+        }}>
+          <button
+            onClick={() => setCurrentView('main')}
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px 16px',
+              fontSize: '14px',
+              fontWeight: '600',
+              color: '#1f2937',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-1px)'
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'
+            }}
+          >
+            <span style={{ fontSize: '16px' }}>←</span>
+            <span>Tillbaka</span>
+          </button>
+        </div>
         <h2 style={titleStyle}>{title}</h2>
         <p style={{ 
           fontSize: '16px', 
@@ -524,14 +526,14 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
       }}>
         <button 
           style={{
-            backgroundColor: '#3b82f6',
+            backgroundColor: isGenerating ? '#9ca3af' : '#3b82f6',
             color: 'white',
             border: 'none',
             borderRadius: '12px',
             padding: '20px',
             fontSize: '18px',
             fontWeight: '600',
-            cursor: 'pointer',
+            cursor: isGenerating ? 'not-allowed' : 'pointer',
             boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
             transition: 'all 0.3s ease',
             width: '290px',
@@ -540,7 +542,39 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            textAlign: 'center'
+            textAlign: 'center',
+            opacity: isGenerating ? 0.7 : 1
+          }}
+          onClick={async () => {
+            if (isGenerating) return
+            
+            setIsGenerating(true)
+            try {
+              const response = await fetch('http://localhost:8000/stories', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  title: `Äventyr med ${storyData.character?.name}`,
+                  character: storyData.character?.name,
+                  setting: storyData.location?.name,
+                  adventure: storyData.conflict?.name,
+                  storyType: 'character'
+                })
+              })
+              
+              if (response.ok) {
+                const story = await response.json()
+                navigate('/story-reader', { state: { story, storyData } })
+              } else {
+                alert('Kunde inte skapa saga. Försök igen!')
+              }
+            } catch (err) {
+              alert('Nätverksfel. Kontrollera att backend körs!')
+            } finally {
+              setIsGenerating(false)
+            }
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'translateY(-3px)'
@@ -551,8 +585,10 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
             e.currentTarget.style.backgroundColor = '#3b82f6'
           }}
         >
-          <div style={{ fontSize: '32px', marginBottom: '8px' }}>🪄</div>
-          <div>Skapa saga nu!</div>
+          <div style={{ fontSize: '32px', marginBottom: '8px' }}>
+            {isGenerating ? '⏳' : '🪄'}
+          </div>
+          <div>{isGenerating ? 'Skapar saga...' : 'Skapa saga nu!'}</div>
         </button>
         
         <button 
@@ -652,7 +688,7 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
     ]
 
     return (
-      <>
+    <>
         <div style={{ marginBottom: '32px' }}>
           <h2 style={{
             fontSize: '24px',
@@ -674,7 +710,7 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
           </p>
         </div>
 
-        <div style={{
+      <div style={{ 
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
           gap: '20px',
@@ -696,10 +732,10 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
                 backdropFilter: 'blur(10px)',
                 border: '1px solid rgba(255, 255, 255, 0.2)',
                 minHeight: '160px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center',
                 textAlign: 'center'
               }}
               onClick={() => {
@@ -733,12 +769,12 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
                 margin: 0
               }}>
                 {story.description}
-              </p>
-            </div>
-          ))}
+          </p>
         </div>
-      </>
-    )
+          ))}
+      </div>
+    </>
+  )
   }
 
   return (

@@ -103,7 +103,7 @@ const LoginPage = ({ selectedTheme = 'candy' }) => {
     try {
       const result = await login(username, password)
       if (result.success) {
-        navigate('/')
+    navigate('/')
       } else {
         setLoginError(result.error || 'Inloggning misslyckades')
       }

@@ -20,23 +20,23 @@ export const AuthProvider = ({ children }) => {
       setLoading(true)
       setError(null)
       
-      // Simulate API call - replace with real authentication later
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Real API call to backend
+      const response = await fetch('http://localhost:8000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password })
+      })
       
-      if (username && password) {
-        const userData = {
-          id: 1,
-          username,
-          settings: {
-            storyAge: 5, // default age for stories
-            theme: 'candy'
-          }
-        }
+      if (response.ok) {
+        const userData = await response.json()
         setUser(userData)
         localStorage.setItem('user', JSON.stringify(userData))
         return { success: true }
       } else {
-        throw new Error('Användarnamn och lösenord krävs')
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Inloggning misslyckades')
       }
     } catch (err) {
       setError(err.message || 'Inloggning misslyckades')
@@ -52,14 +52,58 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('user')
   }
 
-  const updateUserSettings = (newSettings) => {
-    if (user) {
-      const updatedUser = {
-        ...user,
-        settings: { ...user.settings, ...newSettings }
+  const register = async (username, password) => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      // Real API call to backend
+      const response = await fetch('http://localhost:8000/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password })
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        return { success: true, message: result.message }
+      } else {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Registrering misslyckades')
       }
-      setUser(updatedUser)
-      localStorage.setItem('user', JSON.stringify(updatedUser))
+    } catch (err) {
+      setError(err.message || 'Registrering misslyckades')
+      return { success: false, error: err.message }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const updateUserSettings = async (newSettings) => {
+    if (user) {
+      try {
+        // Real API call to update settings
+        const response = await fetch(`http://localhost:8000/users/${user.id}/settings`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newSettings)
+        })
+        
+        if (response.ok) {
+          const updatedUser = {
+            ...user,
+            settings: { ...user.settings, ...newSettings }
+          }
+          setUser(updatedUser)
+          localStorage.setItem('user', JSON.stringify(updatedUser))
+        }
+      } catch (err) {
+        console.error('Failed to update settings:', err)
+      }
     }
   }
 
@@ -83,6 +127,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     error,
     login,
+    register,
     logout,
     updateUserSettings,
     clearError,
