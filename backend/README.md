@@ -1,205 +1,126 @@
 # AI Kids Stories - Backend API
 
-A high-quality FastAPI backend for generating AI-powered children's stories with user management and story personalization.
+En enkel FastAPI backend för att generera AI-sagor för barn med användarhantering och databas.
 
-## 🏗️ Architecture
+## 🏗️ Teknik
 
-- **Framework**: FastAPI with async support
-- **Database**: PostgreSQL 15 with SQLAlchemy 2.0
-- **Cache/Queue**: Redis for caching and background tasks
-- **Background Tasks**: Celery for AI story generation
-- **AI Integration**: OpenAI GPT models
-- **Authentication**: JWT tokens
+- **Framework**: FastAPI 
+- **Database**: PostgreSQL 15
 - **Containerization**: Docker & Docker Compose
+- **Authentication**: Simple password hashing
+- **Language**: Python 3.11
 
-## 📁 Project Structure
+## 📁 Projekt Struktur
 
 ```
 backend/
-├── app/
-│   ├── __init__.py
-│   ├── main.py                 # FastAPI application entry point
-│   ├── core/
-│   │   ├── config.py          # Application configuration
-│   │   └── __init__.py
-│   ├── api/
-│   │   └── v1/
-│   │       ├── api.py         # Main API router
-│   │       ├── endpoints/     # API endpoints
-│   │       │   ├── auth.py    # Authentication
-│   │       │   ├── users.py   # User management
-│   │       │   ├── stories.py # Story operations
-│   │       │   └── health.py  # Health checks
-│   │       └── __init__.py
-│   ├── models/                # SQLAlchemy models (TODO)
-│   ├── schemas/               # Pydantic schemas (TODO)
-│   ├── services/              # Business logic (TODO)
-│   ├── tasks/                 # Celery tasks (TODO)
-│   └── utils/                 # Utility functions (TODO)
-├── tests/                     # Test suite (TODO)
-├── alembic/                   # Database migrations (TODO)
-├── docker-compose.yml         # Development environment
-├── Dockerfile                 # Application container
-├── requirements.txt           # Python dependencies
-├── env.development           # Environment variables template
-└── README.md                 # This file
+├── main.py                   # HELA backend API:et (alla endpoints)
+├── docker-compose.yml       # Docker setup (FastAPI + PostgreSQL)
+├── requirements.txt          # Python dependencies
+├── Dockerfile               # Application container
+├── .env                     # Environment variables
+└── README.md               # Den här filen
 ```
+
+**ENKELT OCH RENT!** Allt ligger i `main.py` - inga komplicerade mappar!
 
 ## 🚀 Quick Start
 
-### Prerequisites
+### Krav
 
-- Docker and Docker Compose
-- Python 3.11+ (for local development)
-- OpenAI API key (for AI story generation)
+- Docker och Docker Compose
+- Det är allt!
 
 ### Setup
 
-1. **Clone and navigate to backend directory**:
+1. **Gå till backend-mappen**:
    ```bash
-   cd AI_SUPERPOWERED_KIDS_STORIES/backend
+   cd backend
    ```
 
-2. **Create environment file**:
-   ```bash
-   cp env.development .env
-   ```
-
-3. **Edit `.env` file** and add your OpenAI API key:
-   ```bash
-   OPENAI_API_KEY=your-actual-openai-api-key
-   ```
-
-4. **Start development environment**:
+2. **Starta Docker**:
    ```bash
    docker-compose up --build
    ```
 
-5. **Access the API**:
-   - API: http://localhost:8000
-   - Documentation: http://localhost:8000/docs
-   - Health Check: http://localhost:8000/health
-
-## 🛠️ Development
-
-### Local Development (without Docker)
-
-1. **Create virtual environment**:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-2. **Install dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Set environment variables** (create `.env` file)
-
-4. **Run the application**:
-   ```bash
-   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-   ```
-
-### Available Services
-
-When running with Docker Compose:
-
-- **API**: http://localhost:8000
-- **PostgreSQL**: localhost:5432
-- **Redis**: localhost:6379
-
-### Environment Variables
-
-See `env.development` for all available configuration options:
-
-- `DATABASE_URL`: PostgreSQL connection string
-- `REDIS_URL`: Redis connection string
-- `SECRET_KEY`: JWT secret key (change in production)
-- `OPENAI_API_KEY`: OpenAI API key for story generation
-- `CORS_ORIGINS`: Allowed frontend origins
+3. **Klart!** API:et körs på:
+   - **API**: http://localhost:8000
+   - **Swagger UI**: http://localhost:8000/docs
+   - **Health Check**: http://localhost:8000/health
 
 ## 📚 API Endpoints
 
-### Core Endpoints
+### Grundläggande
+- `GET /` - API status
+- `GET /health` - Health check
 
-- `GET /` - API status and information
-- `GET /health` - Health check for load balancers
-- `GET /docs` - Interactive API documentation (development only)
+### Autentisering
+- `POST /login` - Logga in användare
+- `POST /register` - Registrera användare
 
-### Health Checks
+### Användarinställningar
+- `PUT /users/{user_id}/settings` - Uppdatera inställningar (ålder, komplexitet)
 
-- `GET /api/v1/health/ping` - Simple ping
-- `GET /api/v1/health/status` - Comprehensive health status
-- `GET /api/v1/health/ready` - Readiness check
-- `GET /api/v1/health/live` - Liveness check
+### Sagor
+- `POST /stories` - Skapa ny saga
+- `GET /stories` - Hämta användarens sagor
+- `GET /stories/{story_id}` - Hämta specifik saga
+- `DELETE /stories/{story_id}` - Ta bort saga
 
-### Planned Endpoints (TODO)
+### Universella Sagor
+- `GET /universal-stories` - Lista fördefinierade sagor
+- `GET /universal-stories/{story_id}` - Hämta universal saga
 
-- `POST /api/v1/auth/login` - User authentication
-- `GET /api/v1/users/me` - Current user profile
-- `POST /api/v1/stories/generate` - AI story generation
-- `GET /api/v1/stories/` - User's saved stories
+## 🗄️ Databas
 
-## 🧪 Testing
+Automatisk setup av:
+- **users** tabell (username, password, story_age, story_complexity)
+- **stories** tabell (user_id, title, content, story_type, created_at)
 
-```bash
-# Run tests (when implemented)
-pytest
-
-# Run with coverage
-pytest --cov=app tests/
-```
-
-## 🐳 Docker Commands
+## 🐳 Docker Kommandon
 
 ```bash
-# Start all services
+# Starta allt
 docker-compose up
 
-# Start in background
+# Starta i bakgrunden
 docker-compose up -d
 
-# Rebuild containers
+# Bygg om
 docker-compose up --build
 
-# View logs
-docker-compose logs -f api
+# Se logs
+docker-compose logs -f
 
-# Stop services
+# Stoppa
 docker-compose down
 
-# Remove volumes (reset database)
+# Nollställ databas
 docker-compose down -v
 ```
 
-## 📝 Development Notes
+## 🔧 Miljövariabler
 
-This is a **high-quality, production-ready** backend structure designed to be:
+`.env` filen innehåller:
+- Database connection
+- Secret key för säkerhet
 
-- **Scalable**: Microservice-ready architecture
-- **Maintainable**: Clean code with proper separation of concerns
-- **Observable**: Comprehensive logging and health checks
-- **Secure**: JWT authentication and proper security headers
-- **Testable**: Structured for easy unit and integration testing
+## 📝 Funktioner
 
-## 🔄 Next Development Steps
+✅ **Login/Register** - Enkel lösenordsautentisering
+✅ **Användarinställningar** - Ålder och komplexitet för sagor
+✅ **Saga-bibliotek** - Spara och hämta användarens sagor  
+✅ **AI-sagagenerering** - Placeholder för framtida OpenAI integration
+✅ **Universella sagor** - Fördefinierade sagor som anpassas efter ålder
+✅ **PostgreSQL databas** - Automatisk setup av tabeller
+✅ **Docker setup** - Bara kör `docker-compose up`!
 
-1. **Database Models**: Create SQLAlchemy models for users, stories, settings
-2. **Authentication**: Implement JWT-based authentication system
-3. **AI Integration**: Set up OpenAI integration for story generation
-4. **Database Migrations**: Set up Alembic for database versioning
-5. **Testing**: Add comprehensive test suite
-6. **Background Tasks**: Implement Celery tasks for async story generation
+## 🎯 Design Filosofi
 
-## 🏗️ Production Deployment
+**ENKELT ÄR BÄST!**
+- EN fil (`main.py`) med allt
+- Inga komplicerade mappar
+- Inga onödiga dependencies
+- Bara det som behövs - inget mer!
 
-For production deployment, ensure:
-
-- Set strong `SECRET_KEY`
-- Use production database credentials
-- Configure proper CORS origins
-- Set up SSL/TLS
-- Use environment-specific Docker configurations
-- Set up monitoring and logging aggregation 
+Perfekt för utveckling och enkel att förstå! 💪 
