@@ -99,9 +99,12 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
   const [isGenerating, setIsGenerating] = useState(false)
 
   const mainStyle = {
-    minHeight: 'calc(100vh - 120px)',
+    minHeight: '100vh',
     background: currentTheme.background,
-    padding: '20px 20px 80px 20px',
+    paddingTop: '100px',
+    paddingBottom: '80px',
+    paddingLeft: '20px',
+    paddingRight: '20px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -345,7 +348,8 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
       <>
         <div style={{ 
           display: 'flex',
-          justifyContent: 'flex-start',
+          justifyContent: 'space-between',
+          alignItems: 'center',
           width: '100%',
           maxWidth: '1200px',
           margin: '0 auto 20px',
@@ -380,8 +384,9 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
             <span style={{ fontSize: '16px' }}>←</span>
             <span>Tillbaka</span>
           </button>
+          <h2 style={{...titleStyle, margin: '0', textAlign: 'center', flex: '1'}}>{title}</h2>
+          <div style={{width: '88px'}}></div>
         </div>
-        <h2 style={titleStyle}>{title}</h2>
         <p style={{ 
           fontSize: '16px', 
           color: currentTheme.textColor, 

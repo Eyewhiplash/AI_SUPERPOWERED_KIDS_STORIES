@@ -69,9 +69,12 @@ const StoryReaderPage = ({ selectedTheme = 'candy' }) => {
   }
 
   const mainStyle = {
-    minHeight: 'calc(100vh - 120px)',
+    minHeight: '100vh',
     background: currentTheme.background,
-    padding: '120px 20px 80px 20px',
+    paddingTop: '100px',
+    paddingBottom: '80px',
+    paddingLeft: '20px',
+    paddingRight: '20px',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
