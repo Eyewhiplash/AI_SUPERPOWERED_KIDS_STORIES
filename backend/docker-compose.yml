@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: stories
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  api:
+    image: python:3.11
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      DB_HOST: db
+      DB_NAME: stories
+      DB_USER: user
+      DB_PASS: pass
+    depends_on:
+      - db
+    command: sh -c "pip install -r requirements.txt && uvicorn main:app --host 0.0.0.0 --reload"
+
+volumes:
+  db_data: 
