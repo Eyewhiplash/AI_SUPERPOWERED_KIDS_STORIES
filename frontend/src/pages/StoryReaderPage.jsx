@@ -69,12 +69,14 @@ const StoryReaderPage = ({ selectedTheme = 'candy' }) => {
   }
 
   const mainStyle = {
-    minHeight: '100vh',
+    minHeight: 'calc(100vh - 120px)',
     background: currentTheme.background,
-    padding: '100px 20px 120px 20px',
+    padding: '120px 20px 80px 20px',
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center'
+    alignItems: 'center',
+    width: '100%',
+    boxSizing: 'border-box'
   }
 
   const containerStyle = {
@@ -140,29 +142,28 @@ const StoryReaderPage = ({ selectedTheme = 'candy' }) => {
 
   return (
     <div style={mainStyle}>
-      <button
-        onClick={() => navigate('/create-story')}
-        style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          border: 'none',
-          borderRadius: '8px',
-          padding: '8px 16px',
-          fontSize: '14px',
-          fontWeight: '600',
-          color: '#1f2937',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-          marginBottom: '20px',
-          alignSelf: 'flex-start'
-        }}
-      >
-        <span>←</span>
-        <span>Tillbaka</span>
-      </button>
-
       <div style={containerStyle}>
+        <button
+          onClick={() => navigate('/create-story')}
+          style={{
+            backgroundColor: 'transparent',
+            border: 'none',
+            padding: '8px 0px',
+            fontSize: '14px',
+            fontWeight: '600',
+            color: '#6b7280',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            marginBottom: '20px',
+            alignSelf: 'flex-start'
+          }}
+        >
+          <span>←</span>
+          <span>Tillbaka</span>
+        </button>
+
         <h1 style={titleStyle}>{story.title}</h1>
         
         <div style={storyStyle}>

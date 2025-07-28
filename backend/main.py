@@ -75,6 +75,10 @@ def generate_ai_story(prompt: str, age: int, complexity: str) -> str:
 def root():
     return {"message": "AI Kids Stories API"}
 
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
+
 @app.post("/login")
 def login(request: LoginRequest):
     conn = get_db()
