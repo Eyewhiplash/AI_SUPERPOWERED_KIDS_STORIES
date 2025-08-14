@@ -1,29 +1,29 @@
-# 🎭 AI Storyteller for Kids
+#  AI Storyteller for Kids
 
 > En magisk AI-driven berättarapplikation som skapar personliga sagor för barn
 
-## 📖 Projektöversikt
+##  Projektöversikt
 
 AI Storyteller är en säker och rolig webbapplikation där barn kan få personliga berättelser skapade av AI. Med föräldrakontroll och säker inloggning skapar vi en trygg miljö för kreativ storytelling.
 
-## 🚀 Tech Stack
+##  Tech Stack
 
 ### Frontend
-- ⚛️ **React 18** med Vite (snabb utveckling)
-- 🎨 **Tailwind CSS** (responsiv design)
-- 🔐 **Säker autentisering** (JWT tokens)
+-  **React 18** med Vite (snabb utveckling)
+-  **Tailwind CSS** (responsiv design)
+-  **Säker autentisering** (JWT tokens)
 
 ### Backend
-- 🐍 **FastAPI** (async Python API)
-- 📝 **Pydantic** (datavalidering)
-- 🐘 **PostgreSQL** (databas)
-- 🐳 **Docker** (containerisering)
+-  **FastAPI** (async Python API)
+-  **Pydantic** (datavalidering)
+-  **PostgreSQL** (databas)
+-  **Docker** (containerisering)
 
 ### AI Integration
-- 🤖 **OpenAI API** (story generation)
-- 🎯 **Åldersanpassat innehåll**
+-  **OpenAI API** (story generation)
+-  **Åldersanpassat innehåll**
 
-## 📁 Projektstruktur
+##  Projektstruktur
 
 ```
 main-project/
@@ -33,7 +33,7 @@ main-project/
 └── README.md         # Du är här! 🎉
 ```
 
-## 🛠️ Development Setup
+##  Development Setup
 
 ### Förutsättningar
 - Node.js 18+
@@ -60,7 +60,7 @@ uvicorn main:app --reload
 docker-compose up
 ```
 
-## 🔐 Säkerhetsfunktioner
+##  Säkerhetsfunktioner
 
 - ✅ Password hashing (bcrypt/argon2)
 - ✅ JWT token authentication
@@ -69,7 +69,7 @@ docker-compose up
 - ✅ Rate limiting för API
 - ✅ CORS-konfiguration
 
-## 🎯 Features (Planerade)
+##  Features (Planerade)
 
 ### MVP
 - [ ] Användarregistrering och inloggning
@@ -84,7 +84,7 @@ docker-compose up
 - [ ] Delning av berättelser
 - [ ] Offline-läge
 
-## 🎨 Design Philosophy
+##  Design Philosophy
 
 **För barn:**
 - Färgglad och lekfull UI
@@ -97,21 +97,11 @@ docker-compose up
 - Säkerhetskontroller
 - Aktivitetsloggar
 
-## 📝 Development Notes
+##  Development Notes
 
-- Kom ihåg att commita ofta! 📝
+- Kom ihåg att commita ofta! 
 - Använd feature branches för nya funktioner
 - Skriv tester för kritisk funktionalitet
-- Dokumentera API-endpoints
-
-## 🎉 Getting Started
-
-1. **Clone & Setup**: Följ instruktionerna ovan
+- Dokumentera API-endpoints.
 2. **Create Feature Branch**: `git checkout -b feature/amazing-feature`
-3. **Code Away**: Bygg något fantastiskt!
-4. **Commit Often**: `git commit -m "Add amazing feature"`
-5. **Push & Celebrate**: 🎉
-
----
-
-*Skapad med ❤️ för att sprida glädje genom berättelser* 
+3. **Code Away**: Bygg  genom berättelser* 
