@@ -28,6 +28,8 @@ app.add_middleware(
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 OPENAI_TTS_MODEL = os.getenv("OPENAI_TTS_MODEL", "gpt-4o-mini-tts")
 OPENAI_TTS_VOICE = os.getenv("OPENAI_TTS_VOICE", "alloy")
+OPENAI_IMAGE_MODEL = os.getenv("OPENAI_IMAGE_MODEL", "gpt-image-1")
+OPENAI_IMAGE_FALLBACK_MODEL = os.getenv("OPENAI_IMAGE_FALLBACK_MODEL", "dall-e-3")
 
 # Database connection
 def get_db():
@@ -75,6 +77,78 @@ def generate_ai_story(prompt: str, age: int, complexity: str) -> str:
             return f"In einem fernen Land lebte ein mutiges {age}-jähriges Kind. Eines Tages entdeckte es {prompt} och begab sich auf eine aufregende Reise voller Herausforderungen, Freundschaften och magischer Momente. Nach vielen Abenteuern kehrte es als Held nach Hause zurück."
     else:
         return f"Det var en gång ett {age}-årigt barn som upptäckte {prompt}. Barnet gick på ett spännande äventyr, träffade nya vänner och lärde sig viktiga lärdomar. Till slut kom barnet hem som en sann hjälte."
+
+def _generate_image_prompts_from_story(story_text: str, num_images: int = 3) -> List[str]:
+    """Skapa korta scenbeskrivningar för bilder baserat på sagans innehåll (svenska)."""
+    num_images = max(1, min(6, num_images))
+    try:
+        system = (
+            "Du är en kreativ bildprompt-skrivare. Du får en svensk barn-saga och ska skapa mycket korta, konkreta bildprompter för barnvänliga tecknade illustrationer."
+        )
+        user = (
+            f"Sagan:\n{story_text}\n\nGe exakt {num_images} rader. Varje rad ska vara en kort svensk bildprompt som beskriver en tydlig scen (början, mitten, slut).\n"
+            "Lägg alltid till stilen: 'barnvänlig tecknad stil, mjuka former, klara färger, mild belysning'."
+        )
+        resp = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
+            ],
+            temperature=0.7,
+            max_tokens=400,
+        )
+        text = resp.choices[0].message.content.strip()
+        # Dela upp i rader, rensa punkter/nummer
+        prompts: List[str] = []
+        for line in text.splitlines():
+            clean = line.strip().lstrip("-•0123456789. ").strip()
+            if clean:
+                prompts.append(clean)
+        if len(prompts) < num_images:
+            # Fyll ut med generiska steg om modellen gav färre
+            prompts += ["En glad scen i mitten, barnvänlig tecknad stil, mjuka former, klara färger"] * (num_images - len(prompts))
+        return prompts[:num_images]
+    except Exception:
+        # Fallback: generiska steg
+        base = "barnvänlig tecknad stil, mjuka former, klara färger"
+        return [
+            f"Huvudkaraktären presenteras, {base}",
+            f"Hjälten övervinner ett hinder, {base}",
+            f"Lyckligt slut, {base}",
+        ][:num_images]
+
+def _generate_images_from_prompts(prompts: List[str], size: str = "1024x1024") -> List[str]:
+    """Generera bilder med OpenAI och returnera data-URL:er (PNG base64)."""
+    images_data_urls: List[str] = []
+    for prompt in prompts:
+        # Försök primär modell först
+        try:
+            img = client.images.generate(
+                model=OPENAI_IMAGE_MODEL,
+                prompt=prompt,
+                size=size,
+                response_format="b64_json",
+            )
+            b64 = img.data[0].b64_json
+            images_data_urls.append(f"data:image/png;base64,{b64}")
+            continue
+        except Exception as exc_primary:
+            print(f"OpenAI image error (primary {OPENAI_IMAGE_MODEL}): {exc_primary}")
+            # Fallback till DALL·E 3 om primär är spärrad/otillgänglig
+            try:
+                img = client.images.generate(
+                    model=OPENAI_IMAGE_FALLBACK_MODEL,
+                    prompt=prompt,
+                    size=size,
+                    response_format="b64_json",
+                )
+                b64 = img.data[0].b64_json
+                images_data_urls.append(f"data:image/png;base64,{b64}")
+                continue
+            except Exception as exc_fallback:
+                print(f"OpenAI image error (fallback {OPENAI_IMAGE_FALLBACK_MODEL}): {exc_fallback}")
+    return images_data_urls
 
 @app.get("/")
 def root():
@@ -129,12 +203,85 @@ def tts_story(story_id: int, voice: str = Query(default=OPENAI_TTS_VOICE)):
     if not text.strip():
         raise HTTPException(400, "Story has no content")
 
+    # Try return cached audio first
+    try:
+        conn_cached = get_db()
+        cur_cached = conn_cached.cursor()
+        cur_cached.execute(
+            "SELECT audio_bytes FROM story_audio WHERE story_id = %s AND voice = %s ORDER BY created_at DESC LIMIT 1",
+            (story_id, voice),
+        )
+        row_audio = cur_cached.fetchone()
+        conn_cached.close()
+        if row_audio and row_audio[0]:
+            blob = row_audio[0]
+            return Response(content=(blob.tobytes() if hasattr(blob, 'tobytes') else blob), media_type="audio/mpeg")
+    except Exception:
+        pass
+
+    # Generate fresh, then save
     try:
         audio_bytes = _synthesize_tts_bytes(text, voice)
+        try:
+            conn_save = get_db()
+            cur_save = conn_save.cursor()
+            cur_save.execute(
+                "INSERT INTO story_audio (story_id, voice, audio_bytes, created_at) VALUES (%s, %s, %s, %s)",
+                (story_id, voice, psycopg2.Binary(audio_bytes), datetime.now()),
+            )
+            conn_save.commit()
+            conn_save.close()
+        except Exception as save_err:
+            print(f"Save TTS error: {save_err}")
         return Response(content=audio_bytes, media_type="audio/mpeg")
     except Exception as e:
         print(f"OpenAI TTS error: {e}")
         raise HTTPException(500, "TTS generation failed")
+
+@app.post("/stories/{story_id}/images")
+def generate_story_images(story_id: int, num_images: int = Query(default=3, ge=1, le=6), size: str = Query(default="1024x1024")):
+    """Generera 1-6 bilder för en specifik sparad saga."""
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT title, content FROM stories WHERE id = %s", (story_id,))
+    row = cur.fetchone()
+    conn.close()
+    if not row:
+        raise HTTPException(404, "Story not found")
+    title, content = row[0] or "Saga", row[1] or ""
+    if not content.strip():
+        raise HTTPException(400, "Story has no content")
+    prompts = _generate_image_prompts_from_story(content, num_images=num_images)
+    images = _generate_images_from_prompts(prompts, size=size)
+    if not images:
+        raise HTTPException(500, "Image generation failed")
+    # Persist generated images with indices
+    try:
+        conn_imgs = get_db()
+        cur_imgs = conn_imgs.cursor()
+        cur_imgs.execute("DELETE FROM story_images WHERE story_id = %s", (story_id,))
+        for idx, (img, pr) in enumerate(zip(images, prompts)):
+            cur_imgs.execute(
+                "INSERT INTO story_images (story_id, image_index, data_url, prompt, created_at) VALUES (%s, %s, %s, %s, %s)",
+                (story_id, idx, img, pr, datetime.now()),
+            )
+        conn_imgs.commit()
+        conn_imgs.close()
+    except Exception as save_exc:
+        print(f"Save images error: {save_exc}")
+    return {"title": title, "images": images, "prompts": prompts}
+
+@app.get("/stories/{story_id}/images")
+def get_story_images(story_id: int):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT image_index, data_url, prompt FROM story_images WHERE story_id = %s ORDER BY image_index ASC",
+        (story_id,),
+    )
+    rows = cur.fetchall()
+    conn.close()
+    return {"images": [r[1] for r in rows], "prompts": [r[2] for r in rows]}
 
 @app.post("/login")
 def login(request: LoginRequest):
@@ -427,6 +574,34 @@ def tts_universal_story(story_id: str, user_id: int = 1, voice: str = Query(defa
         print(f"OpenAI TTS error (universal): {e}")
         raise HTTPException(500, "TTS generation failed")
 
+@app.post("/universal-stories/{story_id}/images")
+def generate_universal_story_images(story_id: str, user_id: int = 1, num_images: int = Query(default=3, ge=1, le=6), size: str = Query(default="1024x1024")):
+    """Generera 1-6 bilder för en universell saga (baserad på personlig ålder)."""
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT story_age, story_complexity FROM users WHERE id = %s", (user_id,))
+    user = cur.fetchone()
+    age, _ = (user[0] or 5, user[1] or "medium") if user else (5, "medium")
+    conn.close()
+
+    stories = {
+        "cinderella": f"En gång i tiden fanns en snäll {age}-årig flicka som hette Askungen...",
+        "little_red": f"Det var en gång en modig {age}-årig flicka som kallades Rödluvan...",
+        "three_pigs": f"Tre små grisar, alla {age} år gamla, bestämde sig för att bygga egna hus...",
+        "goldilocks": f"En nyfiken {age}-årig flicka som hette Guldlock gick vilse i skogen...",
+        "space_adventure": f"Astronaut {age}-åring Max startade sitt rymdskepp...",
+        "underwater_quest": f"Den {age}-åriga dykaren Emma dök ner i det blå havet...",
+    }
+    if story_id not in stories:
+        raise HTTPException(404, "Universal story not found")
+
+    content = stories[story_id]
+    prompts = _generate_image_prompts_from_story(content, num_images=num_images)
+    images = _generate_images_from_prompts(prompts, size=size)
+    if not images:
+        raise HTTPException(500, "Image generation failed")
+    return {"title": story_id.replace("_", " ").title(), "images": images, "prompts": prompts}
+
 @app.on_event("startup")
 def create_tables():
     conn = get_db()
@@ -451,6 +626,27 @@ def create_tables():
             title VARCHAR(200) NOT NULL,
             content TEXT NOT NULL,
             story_type VARCHAR(50) DEFAULT 'custom',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    # Story images table
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS story_images (
+            id SERIAL PRIMARY KEY,
+            story_id INTEGER REFERENCES stories(id) ON DELETE CASCADE,
+            image_index INTEGER DEFAULT 0,
+            data_url TEXT NOT NULL,
+            prompt TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    # Story audio table
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS story_audio (
+            id SERIAL PRIMARY KEY,
+            story_id INTEGER REFERENCES stories(id) ON DELETE CASCADE,
+            voice VARCHAR(50) DEFAULT 'alloy',
+            audio_bytes BYTEA NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)

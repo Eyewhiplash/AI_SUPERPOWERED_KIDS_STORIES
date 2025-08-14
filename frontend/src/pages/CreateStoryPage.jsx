@@ -100,6 +100,7 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
   const [savedStories, setSavedStories] = useState([])
   const [isLoadingSaved, setIsLoadingSaved] = useState(false)
   const [loadSavedError, setLoadSavedError] = useState(null)
+  const [deletingId, setDeletingId] = useState(null)
 
   const mainStyle = {
     minHeight: '100vh',
@@ -733,14 +734,47 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
                   padding: '20px',
                   boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
                   cursor: 'pointer',
-                  transition: 'all 0.2s ease'
+                  transition: 'all 0.2s ease',
+                  position: 'relative'
                 }}
                 onClick={() => navigate('/story-reader', { state: { story: s } })}
                 onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-3px)' }}
                 onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
               >
-                <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '8px', color: '#1f2937' }}>{s.title}</div>
-                <div style={{ fontSize: '13px', color: '#6b7280' }}>{(s.content || '').slice(0, 120)}{(s.content || '').length > 120 ? '…' : ''}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ fontWeight: 700, fontSize: '16px', color: '#1f2937' }}>{s.title}</div>
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation()
+                      if (deletingId) return
+                      const ok = window.confirm('Radera denna saga? Detta går inte att ångra.')
+                      if (!ok) return
+                      try {
+                        setDeletingId(s.id)
+                        const res = await fetch(`http://localhost:8000/stories/${s.id}`, { method: 'DELETE' })
+                        if (!res.ok) throw new Error('Radering misslyckades')
+                        setSavedStories(prev => prev.filter(st => st.id !== s.id))
+                      } catch (err) {
+                        alert('Kunde inte radera saga. Försök igen.')
+                      } finally {
+                        setDeletingId(null)
+                      }
+                    }}
+                    disabled={deletingId === s.id}
+                    title="Radera saga"
+                    style={{
+                      backgroundColor: deletingId === s.id ? '#ef4444' : 'rgba(255,255,255,0.95)',
+                      color: deletingId === s.id ? '#fff' : '#b91c1c',
+                      border: '1px solid #fecaca',
+                      borderRadius: '10px',
+                      padding: '6px 10px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: deletingId ? 'not-allowed' : 'pointer',
+                    }}
+                  >{deletingId === s.id ? 'Raderar…' : 'Radera'}</button>
+                </div>
+                <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '6px' }}>{(s.content || '').slice(0, 120)}{(s.content || '').length > 120 ? '…' : ''}</div>
                 <div style={{ marginTop: '10px', fontSize: '12px', color: '#374151', opacity: 0.8 }}>
                   {s.storyType} • {s.createdAt ? new Date(s.createdAt).toLocaleString() : ''}
                 </div>

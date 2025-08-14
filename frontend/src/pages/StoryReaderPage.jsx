@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 const themes = {
@@ -38,6 +38,79 @@ const StoryReaderPage = ({ selectedTheme = 'candy' }) => {
   const [currentTime, setCurrentTime] = useState(0)
   const [voice, setVoice] = useState('alloy')
   const [volume, setVolume] = useState(1)
+  const [isGeneratingImages, setIsGeneratingImages] = useState(false)
+  const [images, setImages] = useState([])
+  const [imagePrompts, setImagePrompts] = useState([])
+  const [imageLoaded, setImageLoaded] = useState([])
+  const thumbRefs = useRef([])
+  const containerRef = useRef(null)
+  const [zoomOverlay, setZoomOverlay] = useState({ active: false, index: null, from: null, scale: 1, dx: 0, dy: 0 })
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') setZoomOverlay({ active: false, index: null, from: null, scale: 1, anim: false }) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  // Lås scroll när overlay visas
+  useEffect(() => {
+    const hasOverlay = zoomOverlay.active
+    const original = document.body.style.overflow
+    if (hasOverlay) document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = original }
+  }, [zoomOverlay.active])
+
+  // Ladda ev. sparade bilder för denna saga vid öppning
+  useEffect(() => {
+    let cancelled = false
+    async function loadSavedImages() {
+      if (!story || !story.id) return
+      if ((images && images.length) > 0) return
+      try {
+        const res = await fetch(`http://localhost:8000/stories/${story.id}/images`)
+        if (!res.ok) return
+        const data = await res.json()
+        const imgs = Array.isArray(data.images) ? data.images : []
+        if (!cancelled && imgs.length > 0) {
+          setImages(imgs)
+          setImagePrompts((data.prompts || []).map(sanitizeCaption))
+          setImageLoaded(new Array(imgs.length).fill(false))
+        }
+      } catch (_) { /* ignore */ }
+    }
+    loadSavedImages()
+    return () => { cancelled = true }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [story && story.id])
+
+  // Säkerställ att thumbnails blir synliga även om onLoad missas
+  useEffect(() => {
+    if (!images || images.length === 0) return
+    // initiera refs och markera färdiga bilder
+    const states = images.map((_, i) => {
+      const imgEl = thumbRefs.current[i]?.querySelector('img')
+      return imgEl && imgEl.complete ? true : false
+    })
+    // om någon complete, uppdatera
+    if (states.some(Boolean)) {
+      setImageLoaded(prev => {
+        const copy = [...(prev.length === images.length ? prev : new Array(images.length).fill(false))]
+        states.forEach((v, i) => { if (v) copy[i] = true })
+        return copy
+      })
+    }
+  }, [images])
+
+  const sanitizeCaption = (text) => {
+    if (!text) return ''
+    let t = String(text)
+      .replace(/\*\*/g, '') // ta bort ** **
+      .replace(/\([^)]*\)/g, '') // ta bort parentes-innehåll
+      .replace(/\s+/g, ' ') // normalisera whitespace
+      .trim()
+    if (t.length > 110) t = t.slice(0, 107).trim() + '…'
+    return t
+  }
 
   if (!story) {
     return (
@@ -119,6 +192,109 @@ const StoryReaderPage = ({ selectedTheme = 'candy' }) => {
     whiteSpace: 'pre-line'
   }
 
+  const galleryStyle = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+    gap: '10px',
+    marginBottom: '24px'
+  }
+  const imageCardStyle = {
+    backgroundColor: 'rgba(255,255,255,0.85)',
+    border: '1px solid #e5e7eb',
+    borderRadius: '12px',
+    overflow: 'hidden',
+    boxShadow: '0 6px 12px rgba(0,0,0,0.06)',
+    position: 'relative',
+    cursor: 'zoom-in'
+  }
+  const imageStyle = {
+    width: '100%',
+    height: '220px',
+    objectFit: 'cover',
+    display: 'block',
+    transition: 'opacity 400ms ease, transform 400ms ease'
+  }
+  const imageCaptionStyle = {
+    padding: '8px 10px',
+    fontSize: '12px',
+    color: '#6b7280'
+  }
+  const placeholderStyle = {
+    position: 'absolute',
+    inset: 0,
+    height: '220px',
+    background: 'linear-gradient(90deg, rgba(0,0,0,0.03), rgba(0,0,0,0.06), rgba(0,0,0,0.03))',
+    backgroundSize: '200% 100%',
+    pointerEvents: 'none'
+  }
+
+  const overlayStyle = {
+    position: 'fixed',
+    inset: 0,
+    background: 'rgba(0,0,0,0.6)',
+    backdropFilter: 'blur(2px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+    padding: '20px',
+    transition: 'opacity 0ms ease',
+    opacity: 0
+  }
+  const lightboxContentStyle = {
+    background: 'rgba(255,255,255,0.95)',
+    borderRadius: '14px',
+    boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
+    border: '1px solid rgba(255,255,255,0.5)',
+    maxWidth: '90vw',
+    maxHeight: '90vh',
+    padding: '10px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px'
+  }
+  const lightboxImgStyle = {
+    maxWidth: '86vw',
+    maxHeight: '74vh',
+    objectFit: 'contain',
+    borderRadius: '10px'
+  }
+  const lightboxCaptionStyle = {
+    fontSize: '14px',
+    color: '#4b5563',
+    textAlign: 'center'
+  }
+  const closeButtonStyle = {
+    alignSelf: 'center',
+    backgroundColor: '#111827',
+    color: 'white',
+    border: 'none',
+    borderRadius: '10px',
+    padding: '8px 14px',
+    cursor: 'pointer'
+  }
+
+  // “Zoom in place” animation overlay baserat på thumbnail rect
+  const zoomOverlayStyle = ({ from, active, scale = 1, dx = 0, dy = 0 }) => {
+    if (!from) return { display: 'none' }
+    const { top, left, width, height } = from
+    return {
+      position: 'fixed',
+      top,
+      left,
+      width,
+      height,
+      zIndex: 1100,
+      boxShadow: '0 20px 40px rgba(0,0,0,0.35)',
+      borderRadius: '12px',
+      overflow: 'hidden',
+      background: '#fff',
+      transformOrigin: 'center center',
+      transform: `translate(${dx}px, ${dy}px) scale(${scale})`,
+      transition: 'transform 260ms ease',
+    }
+  }
+
   const buttonContainerStyle = {
     display: 'flex',
     gap: '12px',
@@ -185,7 +361,7 @@ const StoryReaderPage = ({ selectedTheme = 'candy' }) => {
 
   return (
     <div style={mainStyle}>
-      <div style={containerStyle}>
+      <div style={containerStyle} ref={containerRef}>
         <button
           onClick={() => navigate('/create-story')}
           style={{
@@ -207,7 +383,7 @@ const StoryReaderPage = ({ selectedTheme = 'candy' }) => {
           <span>Tillbaka</span>
         </button>
 
-        {/* TTS spelare högst upp */}
+        {/* TTS spelare + bildknapp högst upp */}
         <div style={ttsBarStyle}>
           <button
             style={{...iconButtonStyle, opacity: isLoadingTTS ? 0.7 : 1}}
@@ -282,10 +458,137 @@ const StoryReaderPage = ({ selectedTheme = 'candy' }) => {
               onChange={(e)=>{ const v = Number(e.target.value); setVolume(v); if(audioEl){ audioEl.volume = v } }}
               style={{ width:'120px' }}
             />
+            <button
+              onClick={async () => {
+                if (isGeneratingImages) return
+                try {
+                  setIsGeneratingImages(true)
+                  const isUniversal = story.storyType === 'universal'
+                  const url = isUniversal
+                    ? `http://localhost:8000/universal-stories/${story.id}/images?num_images=3&size=1024x1024`
+                    : `http://localhost:8000/stories/${story.id}/images?num_images=3&size=1024x1024`
+                  const res = await fetch(url, { method: 'POST' })
+                  if (!res.ok) throw new Error('Kunde inte skapa bilder')
+                  const data = await res.json()
+                  const imgs = Array.isArray(data.images) ? data.images : []
+                  const prompts = Array.isArray(data.prompts) ? data.prompts.map(sanitizeCaption) : []
+                  setImages(imgs)
+                  setImagePrompts(prompts)
+                  setImageLoaded(new Array(imgs.length).fill(false))
+                } catch (e) {
+                  alert('Bilder kunde inte genereras just nu')
+                } finally {
+                  setIsGeneratingImages(false)
+                }
+              }}
+              style={{
+                ...secondaryButtonStyle,
+                padding: '10px 14px',
+                borderWidth: '1px'
+              }}
+              disabled={isGeneratingImages}
+            >{isGeneratingImages ? 'Skapar…' : 'Skapa bilder'}</button>
           </div>
         </div>
 
         <h1 style={titleStyle}>{story.title}</h1>
+        {/* Ladda sparade bilder om de finns */}
+        {images.length === 0 && story?.id && (
+          <React.Fragment>
+            {/* lazy load on mount */}
+            {(() => {
+              (async () => {
+                try {
+                  const res = await fetch(`http://localhost:8000/stories/${story.id}/images`)
+                  if (res.ok) {
+                    const data = await res.json()
+                    if (Array.isArray(data.images) && data.images.length > 0) {
+                      setImages(data.images)
+                      setImagePrompts((data.prompts || []).map(sanitizeCaption))
+                      setImageLoaded(new Array(data.images.length).fill(false))
+                    }
+                  }
+                } catch (_) {}
+              })()
+              return null
+            })()}
+          </React.Fragment>
+        )}
+        {images.length > 0 && (
+          <div style={galleryStyle}>
+            {images.map((src, i) => (
+              <div
+                key={i}
+                style={imageCardStyle}
+                onClick={() => {
+                  const card = thumbRefs.current[i]
+                  let rect = null
+                  try { rect = card?.getBoundingClientRect() } catch(_) {}
+                  if (rect) {
+                    // Start från thumb-rect, zooma till 2x och flytta mot mitten av container
+                    // Start från thumb-rect
+                    const thumbCenterX = rect.left + rect.width / 2
+                    const thumbCenterY = rect.top + rect.height / 2
+                    // Fast målpunkt: mitt på sidan horisontellt, högre upp vertikalt (ca 25% av viewporthöjd)
+                    const targetCenterX = Math.round(window.innerWidth / 2)
+                    const targetCenterY = Math.round(window.innerHeight * 0.5)
+                    const dx = targetCenterX - thumbCenterX
+                    const dy = targetCenterY - thumbCenterY
+                    setZoomOverlay({ active: true, index: i, from: rect, scale: 1, dx: 0, dy: 0 })
+                    requestAnimationFrame(() => setZoomOverlay(prev => ({ ...prev, scale: 2.0, dx, dy })))
+                  } else {
+                    // fallback: ingen animation
+                    setZoomOverlay({ active: true, index: i, from: null, scale: 1, dx: 0, dy: 0 })
+                  }
+                }}
+                ref={el => (thumbRefs.current[i] = el)}
+              >
+                {!imageLoaded[i] && <div style={{...placeholderStyle, animation: 'shimmer 1.2s linear infinite'}} />}
+                <img
+                  src={src}
+                  alt="Illustration"
+                  style={{
+                    ...imageStyle,
+                    opacity: imageLoaded[i] ? 1 : 0,
+                    transform: imageLoaded[i] ? 'scale(1)' : 'scale(1.02)'
+                  }}
+                  onLoad={() => setImageLoaded(prev => {
+                    const copy = [...prev]
+                    copy[i] = true
+                    return copy
+                  })}
+                  onError={() => setImageLoaded(prev => {
+                    const copy = [...prev]
+                    copy[i] = true
+                    return copy
+                  })}
+                />
+                {imagePrompts[i] && (
+                  <div style={imageCaptionStyle}>{imagePrompts[i]}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Zoom-in-place overlay */}
+        {zoomOverlay.active && zoomOverlay.from && (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 1095, pointerEvents: 'none' }}>
+            <div
+              style={zoomOverlayStyle({ from: zoomOverlay.from, active: zoomOverlay.active, scale: zoomOverlay.scale, dx: zoomOverlay.dx, dy: zoomOverlay.dy })}
+            >
+              <img src={images[zoomOverlay.index]} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+          </div>
+        )}
+
+        {/* Stäng zoom on click på overlay */}
+        {zoomOverlay.active && zoomOverlay.from && (
+          <div
+            onClick={() => setZoomOverlay({ active: false, index: null, from: null, scale: 1, dx: 0, dy: 0 })}
+            style={{ position:'fixed', inset:0, zIndex:1090, background:'rgba(0,0,0,0.0)' }}
+          />
+        )}
         
         <div style={storyStyle}>
           {story.content}
