@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
 
 const themes = {
   candy: {
@@ -27,7 +26,6 @@ const themes = {
 
 const HomePage = ({ selectedTheme = 'candy' }) => {
   const navigate = useNavigate()
-  const { isAuthenticated } = useAuth()
   const currentTheme = themes[selectedTheme] || themes.candy
 
   const mainStyle = {
@@ -66,19 +64,18 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
   }
 
   const cardContainerStyle = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-    gap: '32px',
+    display: 'flex',
+    justifyContent: 'center',
+    gap: '24px',
     marginTop: '60px',
-    maxWidth: '1000px',
-    margin: '60px auto 0 auto',
-    padding: '0 20px'
+    flexWrap: 'wrap'
   }
 
   const cardStyle = {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: '16px',
-    padding: '24px',
+    border: 'none',
+    borderRadius: '12px',
+    padding: '20px',
     fontSize: '16px',
     fontWeight: '600',
     color: '#1f2937',
@@ -86,17 +83,15 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
     margin: '0',
     boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
     transition: 'all 0.3s ease',
-    width: '300px',
-    minHeight: '200px',
+    width: '280px',
+    height: '180px',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
     textAlign: 'center',
     backdropFilter: 'blur(10px)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-    userSelect: 'none',
-    WebkitUserSelect: 'none'
+    border: '1px solid rgba(255, 255, 255, 0.2)'
   }
 
   const cardTitleStyle = {
@@ -140,29 +135,15 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
         
         <div style={cardContainerStyle}>
           <div 
-            style={{
-              ...cardStyle,
-              opacity: !isAuthenticated ? 0.5 : 1,
-              cursor: !isAuthenticated ? 'not-allowed' : 'pointer'
-            }}
-            onClick={() => {
-              if (isAuthenticated) {
-                navigate('/create-story')
-              } else {
-                alert('Du måste logga in för att skapa sagor!')
-              }
-            }}
+            style={cardStyle}
+            onClick={() => navigate('/create-story')}
             onMouseEnter={(e) => {
-              if (isAuthenticated) {
               e.currentTarget.style.transform = 'translateY(-8px)'
               e.currentTarget.style.boxShadow = '0 15px 35px rgba(0,0,0,0.15)'
-              }
             }}
             onMouseLeave={(e) => {
-              if (isAuthenticated) {
               e.currentTarget.style.transform = 'translateY(0)'
               e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)'
-              }
             }}
           >
             <div style={{ 
@@ -195,10 +176,7 @@ const HomePage = ({ selectedTheme = 'candy' }) => {
               boxShadow: 'none',
               outline: 'none'
             }}>
-              {isAuthenticated 
-                ? 'Läs sparade sagor eller skapa nya magiska berättelser för ditt barn'
-                : 'Logga in för att skapa och läsa sagor'
-              }
+              Läs sparade sagor eller skapa nya magiska berättelser för ditt barn
             </div>
           </div>
 

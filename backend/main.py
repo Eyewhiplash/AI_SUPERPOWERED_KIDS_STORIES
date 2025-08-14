@@ -64,12 +64,12 @@ def generate_ai_story(prompt: str, age: int, complexity: str) -> str:
     except Exception as e:
         # Fallback if OpenAI fails
         print(f"OpenAI error: {e}")
-        if complexity == "simple":
-            return f"Es war einmal ein {age}-jähriges Kind, das {prompt} entdeckte. Es hatte viele Abenteuer und lebte glücklich bis ans Ende."
-        elif complexity == "advanced":
+    if complexity == "simple":
+        return f"Es war einmal ein {age}-jähriges Kind, das {prompt} entdeckte. Es hatte viele Abenteuer und lebte glücklich bis ans Ende."
+    elif complexity == "advanced":
             return f"In einem fernen Land lebte ein mutiges {age}-jähriges Kind. Eines Tages entdeckte es {prompt} och begab sich auf eine aufregende Reise voller Herausforderungen, Freundschaften och magischer Momente. Nach vielen Abenteuern kehrte es als Held nach Hause zurück."
-        else:
-            return f"Det var en gång ett {age}-årigt barn som upptäckte {prompt}. Barnet gick på ett spännande äventyr, träffade nya vänner och lärde sig viktiga lärdomar. Till slut kom barnet hem som en sann hjälte."
+    else:
+        return f"Det var en gång ett {age}-årigt barn som upptäckte {prompt}. Barnet gick på ett spännande äventyr, träffade nya vänner och lärde sig viktiga lärdomar. Till slut kom barnet hem som en sann hjälte."
 
 @app.get("/")
 def root():

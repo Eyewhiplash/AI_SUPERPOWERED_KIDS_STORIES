@@ -78,7 +78,7 @@ const conflicts = [
 
 const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
   const navigate = useNavigate()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const currentTheme = themes[selectedTheme] || themes.candy
 
   // Redirect if not authenticated
@@ -97,6 +97,9 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
     conflict: null
   })
   const [isGenerating, setIsGenerating] = useState(false)
+  const [savedStories, setSavedStories] = useState([])
+  const [isLoadingSaved, setIsLoadingSaved] = useState(false)
+  const [loadSavedError, setLoadSavedError] = useState(null)
 
   const mainStyle = {
     minHeight: '100vh',
@@ -111,6 +114,32 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
     width: '100%',
     boxSizing: 'border-box'
   }
+
+  // Load saved stories when switching to "sparade-sagor"
+  useEffect(() => {
+    const fetchSavedStories = async () => {
+      if (!user?.id) return
+      setIsLoadingSaved(true)
+      setLoadSavedError(null)
+      try {
+        const response = await fetch(`http://localhost:8000/stories?user_id=${user.id}`)
+        if (!response.ok) {
+          throw new Error('Kunde inte hämta sparade sagor')
+        }
+        const data = await response.json()
+        setSavedStories(Array.isArray(data.stories) ? data.stories : [])
+      } catch (err) {
+        setLoadSavedError(err.message || 'Fel vid hämtning av sparade sagor')
+        setSavedStories([])
+      } finally {
+        setIsLoadingSaved(false)
+      }
+    }
+
+    if (currentView === 'sparade-sagor') {
+      fetchSavedStories()
+    }
+  }, [currentView, user])
 
   const containerStyle = {
     maxWidth: '1200px',
@@ -346,47 +375,47 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
 
     return (
       <>
-        <div style={{ 
-          display: 'flex',
+          <div style={{ 
+            display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          width: '100%',
-          maxWidth: '1200px',
+            width: '100%',
+            maxWidth: '1200px',
           margin: '0 auto 20px',
-          padding: '0 20px'
-        }}>
-          <button
+            padding: '0 20px'
+          }}>
+            <button
             onClick={() => setCurrentView('main')}
-            style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              border: 'none',
-              borderRadius: '8px',
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                border: 'none',
+                borderRadius: '8px',
               padding: '8px 16px',
-              fontSize: '14px',
-              fontWeight: '600',
-              color: '#1f2937',
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-              transition: 'all 0.3s ease',
-              display: 'flex',
-              alignItems: 'center',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#1f2937',
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
               gap: '6px'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-1px)'
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'
-            }}
-          >
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-1px)'
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'
+              }}
+            >
             <span style={{ fontSize: '16px' }}>←</span>
-            <span>Tillbaka</span>
-          </button>
+              <span>Tillbaka</span>
+            </button>
           <h2 style={{...titleStyle, margin: '0', textAlign: 'center', flex: '1'}}>{title}</h2>
           <div style={{width: '88px'}}></div>
-        </div>
+          </div>
         <p style={{ 
           fontSize: '16px', 
           color: currentTheme.textColor, 
@@ -555,7 +584,7 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
             
             setIsGenerating(true)
             try {
-              const response = await fetch('http://localhost:8000/stories', {
+              const response = await fetch(`http://localhost:8000/stories?user_id=${user?.id ?? 1}` , {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -650,34 +679,75 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
 
   const renderSparadeSagorView = () => (
     <>
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        gap: '24px'
-      }}>
-        <div style={{ 
-          backgroundColor: 'rgba(255, 255, 255, 0.9)', 
-          borderRadius: '20px', 
-          padding: '40px',
-          boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
-          textAlign: 'center',
-          width: '400px',
-          height: '250px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          <div style={{ fontSize: '64px', marginBottom: '20px' }}>💾</div>
-          <p style={{ fontSize: '18px', color: '#1f2937', marginBottom: '15px', fontWeight: '600' }}>
-            Sparade sagor
-          </p>
-          <p style={{ fontSize: '16px', color: '#6b7280', lineHeight: '1.5' }}>
-            Här kommer dina egna skapade berättelser att visas. Funktionen byggs snart!
-          </p>
+      <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <h2 style={{ ...titleStyle, margin: 0 }}>Sparade sagor</h2>
+          <button
+            onClick={() => setCurrentView('bibliotek')}
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px 12px',
+              fontSize: '14px',
+              fontWeight: '600',
+              color: '#1f2937',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}
+          >Till meny</button>
         </div>
+
+        {isLoadingSaved && (
+          <div style={{ color: currentTheme.textColor, opacity: 0.8 }}>Laddar sparade sagor...</div>
+        )}
+
+        {loadSavedError && (
+          <div style={{ color: '#b91c1c', marginBottom: '12px' }}>{loadSavedError}</div>
+        )}
+
+        {!isLoadingSaved && !loadSavedError && savedStories.length === 0 && (
+          <div style={{ 
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            borderRadius: '16px',
+            padding: '24px',
+            boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+            textAlign: 'center'
+          }}>
+            Inga sparade sagor ännu. Skapa en saga först!
+          </div>
+        )}
+
+        {!isLoadingSaved && savedStories.length > 0 && (
+          <div style={{ 
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+            gap: '20px'
+          }}>
+            {savedStories.map((s) => (
+              <div
+                key={s.id}
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  borderRadius: '16px',
+                  padding: '20px',
+                  boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onClick={() => navigate('/story-reader', { state: { story: s } })}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-3px)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
+              >
+                <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '8px', color: '#1f2937' }}>{s.title}</div>
+                <div style={{ fontSize: '13px', color: '#6b7280' }}>{(s.content || '').slice(0, 120)}{(s.content || '').length > 120 ? '…' : ''}</div>
+                <div style={{ marginTop: '10px', fontSize: '12px', color: '#374151', opacity: 0.8 }}>
+                  {s.storyType} • {s.createdAt ? new Date(s.createdAt).toLocaleString() : ''}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </>
   )

@@ -1,12 +1,34 @@
-# React + Vite
+# Frontend (React + Vite)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend för AI Kids Stories byggd med React och Vite.
 
-Currently, two official plugins are available:
+## Kom igång
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-## Expanding the ESLint configuration
+Servern startar på `http://localhost:3000` eller närliggande port (Vite väljer ledig).
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Struktur (kort)
+
+- `src/App.jsx` – rutter och huvudlayout
+- `src/contexts/AuthContext.jsx` – inloggning, register, användarinställningar
+- `src/pages/*` – sidor (Hem, Skapa saga, Läsare, Login, Register, Inställningar, m.fl.)
+- `src/components/*` – header, footer, felhanterare m.m.
+
+## Miljö och API
+
+Frontend pratar med backend på `http://localhost:8000`:
+- `POST /login`, `POST /register`
+- `PUT /users/{id}/settings`
+- `POST /stories`, `GET /stories`
+- `GET /universal-stories`
+
+## Utvecklingstips
+
+- Mobil-/surfplattelayout är optimerad med media queries i `src/index.css`
+- Fel fångas globalt via `components/ErrorBoundary.jsx`
+- Inloggningstillstånd lagras i `localStorage`

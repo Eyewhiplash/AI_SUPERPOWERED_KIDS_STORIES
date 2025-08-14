@@ -327,7 +327,7 @@ const CalculatorPage = ({ selectedTheme = 'candy' }) => {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'flex-end',
-    fontFamily: 'monospace'
+    fontFamily: 'inherit'
   }
 
   const buttonGridStyle = {

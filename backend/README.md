@@ -1,126 +1,84 @@
 # AI Kids Stories - Backend API
 
-En enkel FastAPI backend för att generera AI-sagor för barn med användarhantering och databas.
+Enkel FastAPI-backend för AI-sagor med användare, inställningar och PostgreSQL.
 
-## 🏗️ Teknik
+## Teknik
 
-- **Framework**: FastAPI 
-- **Database**: PostgreSQL 15
-- **Containerization**: Docker & Docker Compose
-- **Authentication**: Simple password hashing
-- **Language**: Python 3.11
+- FastAPI (Python 3.11)
+- PostgreSQL 15
+- Docker och Docker Compose
+- Lösenordshashning (sha256)
+- OpenAI GPT-4o mini för sagogenerering
 
-## 📁 Projekt Struktur
+## Strukturoversikt
 
 ```
 backend/
-├── main.py                   # HELA backend API:et (alla endpoints)
-├── docker-compose.yml       # Docker setup (FastAPI + PostgreSQL)
-├── requirements.txt          # Python dependencies
-├── Dockerfile               # Application container
-├── .env                     # Environment variables
-└── README.md               # Den här filen
+├── main.py                # Hela API:et (alla endpoints)
+├── docker-compose.yml     # Docker (API + PostgreSQL)
+├── requirements.txt       # Python-beroenden
+├── Dockerfile             # Bygg image för API
+├── .env                   # Miljövariabler (inte committa hemligheter)
+└── README.md
 ```
 
-**ENKELT OCH RENT!** Allt ligger i `main.py` - inga komplicerade mappar!
+## Kom igång
 
-## 🚀 Quick Start
-
-### Krav
-
-- Docker och Docker Compose
-- Det är allt!
-
-### Setup
-
-1. **Gå till backend-mappen**:
+1. Gå till backend-mappen
    ```bash
    cd backend
    ```
-
-2. **Starta Docker**:
+2. Starta med Docker
    ```bash
    docker-compose up --build
    ```
+3. API finns på
+   - http://localhost:8000
+   - Dokumentation: http://localhost:8000/docs
+   - Health: http://localhost:8000/health
 
-3. **Klart!** API:et körs på:
-   - **API**: http://localhost:8000
-   - **Swagger UI**: http://localhost:8000/docs
-   - **Health Check**: http://localhost:8000/health
+## API-endpoints (urval)
 
-## 📚 API Endpoints
+- `POST /register` – skapa användare
+- `POST /login` – logga in, returnerar id, username, settings
+- `PUT /users/{user_id}/settings` – uppdatera ålder/komplexitet
+- `POST /stories` – skapa saga (sparas i DB)
+- `GET /stories` – lista användarens sagor
+- `GET /stories/{id}` – hämta saga
+- `DELETE /stories/{id}` – ta bort saga
+- `GET /universal-stories` – lista universella sagor
+- `GET /universal-stories/{id}` – hämta universell saga
 
-### Grundläggande
-- `GET /` - API status
-- `GET /health` - Health check
+## Databas
 
-### Autentisering
-- `POST /login` - Logga in användare
-- `POST /register` - Registrera användare
+Tabeller skapas automatiskt vid start:
+- `users` (username, password, story_age, story_complexity)
+- `stories` (user_id, title, content, story_type, created_at)
 
-### Användarinställningar
-- `PUT /users/{user_id}/settings` - Uppdatera inställningar (ålder, komplexitet)
+## Miljövariabler
 
-### Sagor
-- `POST /stories` - Skapa ny saga
-- `GET /stories` - Hämta användarens sagor
-- `GET /stories/{story_id}` - Hämta specifik saga
-- `DELETE /stories/{story_id}` - Ta bort saga
-
-### Universella Sagor
-- `GET /universal-stories` - Lista fördefinierade sagor
-- `GET /universal-stories/{story_id}` - Hämta universal saga
-
-## 🗄️ Databas
-
-Automatisk setup av:
-- **users** tabell (username, password, story_age, story_complexity)
-- **stories** tabell (user_id, title, content, story_type, created_at)
-
-## 🐳 Docker Kommandon
-
-```bash
-# Starta allt
-docker-compose up
-
-# Starta i bakgrunden
-docker-compose up -d
-
-# Bygg om
-docker-compose up --build
-
-# Se logs
-docker-compose logs -f
-
-# Stoppa
-docker-compose down
-
-# Nollställ databas
-docker-compose down -v
+Hanternas via `.env` (exempel):
+```
+POSTGRES_USER=user
+POSTGRES_PASSWORD=pass
+POSTGRES_DB=stories
+DB_HOST=db
+DB_NAME=stories
+DB_USER=user
+DB_PASS=pass
+OPENAI_API_KEY=...din nyckel...
+OPENAI_MODEL=gpt-4o-mini
 ```
 
-## 🔧 Miljövariabler
+`docker-compose.yml` läser dessa värden. Ändra aldrig hemligheter i koden – uppdatera `.env` istället.
 
-`.env` filen innehåller:
-- Database connection
-- Secret key för säkerhet
+## Vanliga Docker-kommandon
 
-## 📝 Funktioner
-
-✅ **Login/Register** - Enkel lösenordsautentisering
-✅ **Användarinställningar** - Ålder och komplexitet för sagor
-✅ **Saga-bibliotek** - Spara och hämta användarens sagor  
-✅ **AI-sagagenerering** - Placeholder för framtida OpenAI integration
-✅ **Universella sagor** - Fördefinierade sagor som anpassas efter ålder
-✅ **PostgreSQL databas** - Automatisk setup av tabeller
-✅ **Docker setup** - Bara kör `docker-compose up`!
-
-## 🎯 Design Filosofi
-
-**ENKELT ÄR BÄST!**
-- EN fil (`main.py`) med allt
-- Inga komplicerade mappar
-- Inga onödiga dependencies
-- Bara det som behövs - inget mer!
-
-Perfekt för utveckling och enkel att förstå! 💪 
+```bash
+docker-compose up               # starta
+docker-compose up -d            # starta i bakgrunden
+docker-compose up --build       # bygg om
+docker-compose logs -f api      # följ API-loggar
+docker-compose down             # stoppa
+docker-compose down -v          # stoppa och rensa DB-volym
+```
