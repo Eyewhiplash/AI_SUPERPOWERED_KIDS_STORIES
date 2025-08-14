@@ -97,11 +97,14 @@ docker-compose up
 - Säkerhetskontroller
 - Aktivitetsloggar
 
-##  Development Notes
+## Development
 
-- Kom ihåg att commita ofta! 
-- Använd feature branches för nya funktioner
-- Skriv tester för kritisk funktionalitet
-- Dokumentera API-endpoints.
+1. **Clone & Setup**: Följ instruktionerna ovan
 2. **Create Feature Branch**: `git checkout -b feature/amazing-feature`
-3. **Code Away**: Bygg  genom berättelser* 
+3. **Code Away**: Bygg något fantastiskt!
+4. **Commit Often**: `git commit -m "Add amazing feature"`
+5. **Push & Celebrate**: 🎉
+
+---
+
+*Skapad med omtanke för att sprida glädje genom berättelser*

@@ -30,6 +30,14 @@ const StoryReaderPage = ({ selectedTheme = 'candy' }) => {
   const currentTheme = themes[selectedTheme] || themes.candy
   const { story, storyData } = location.state || {}
   const [isSaved, setIsSaved] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [isLoadingTTS, setIsLoadingTTS] = useState(false)
+  const [audioEl, setAudioEl] = useState(null)
+  const [audioUrl, setAudioUrl] = useState(null)
+  const [duration, setDuration] = useState(0)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [voice, setVoice] = useState('alloy')
+  const [volume, setVolume] = useState(1)
 
   if (!story) {
     return (
@@ -113,10 +121,42 @@ const StoryReaderPage = ({ selectedTheme = 'candy' }) => {
 
   const buttonContainerStyle = {
     display: 'flex',
-    gap: '20px',
+    gap: '12px',
     justifyContent: 'center',
     flexWrap: 'wrap'
   }
+
+  const ttsBarStyle = {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backdropFilter: 'blur(8px)',
+    border: '1px solid rgba(255, 255, 255, 0.25)',
+    borderRadius: '14px',
+    padding: '10px 12px',
+    display: 'grid',
+    gridTemplateColumns: '48px 1fr auto',
+    gap: '10px 12px',
+    alignItems: 'center',
+    width: '100%',
+    boxShadow: '0 8px 16px rgba(0,0,0,0.05)',
+    margin: '0 auto 16px'
+  }
+
+  const iconButtonStyle = {
+    backgroundColor: isPlaying ? 'rgba(16,185,129,0.9)' : 'rgba(59,130,246,0.9)',
+    color: 'white',
+    border: 'none',
+    width: '48px',
+    height: '48px',
+    borderRadius: '12px',
+    fontSize: '18px',
+    fontWeight: '700',
+    cursor: isLoadingTTS ? 'wait' : 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 6px 14px rgba(0,0,0,0.12)'
+  }
+  const labelStyle = { fontSize: '12px', color: '#6b7280' }
 
   const buttonStyle = {
     backgroundColor: '#3b82f6',
@@ -167,6 +207,84 @@ const StoryReaderPage = ({ selectedTheme = 'candy' }) => {
           <span>Tillbaka</span>
         </button>
 
+        {/* TTS spelare högst upp */}
+        <div style={ttsBarStyle}>
+          <button
+            style={{...iconButtonStyle, opacity: isLoadingTTS ? 0.7 : 1}}
+            disabled={isLoadingTTS}
+            onClick={async () => {
+              try {
+                if (isPlaying && audioEl) {
+                  audioEl.pause()
+                  setIsPlaying(false)
+                  return
+                }
+                setIsLoadingTTS(true)
+                if (audioEl) {
+                  audioEl.pause()
+                  if (audioUrl) URL.revokeObjectURL(audioUrl)
+                }
+                const isUniversal = story.storyType === 'universal'
+                const urlTts = isUniversal
+                  ? `http://localhost:8000/universal-stories/${story.id}/tts?voice=${encodeURIComponent(voice)}`
+                  : `http://localhost:8000/stories/${story.id}/tts?voice=${encodeURIComponent(voice)}`
+                const res = await fetch(urlTts)
+                if (!res.ok) throw new Error('TTS misslyckades')
+                const blob = await res.blob()
+                const url = URL.createObjectURL(blob)
+                setAudioUrl(url)
+                const audio = new Audio(url)
+                audio.volume = volume
+                setAudioEl(audio)
+                audio.onended = () => { setIsPlaying(false) }
+                audio.ontimeupdate = () => { setCurrentTime(audio.currentTime) }
+                audio.onloadedmetadata = () => { setDuration(audio.duration || 0) }
+                await audio.play()
+                setIsPlaying(true)
+              } catch (err) {
+                setIsPlaying(false)
+                alert('Kunde inte spela upp TTS')
+              } finally {
+                setIsLoadingTTS(false)
+              }
+            }}
+          >{isLoadingTTS ? '⏳' : (isPlaying ? '❚❚' : '▶')}</button>
+
+          <div style={{display:'flex', flexDirection:'column', gap:'6px'}}>
+            <input
+              type="range"
+              min={0}
+              max={Math.max(1, duration)}
+              step={0.1}
+              value={Math.min(currentTime, duration)}
+              onChange={(e)=>{ const v = Number(e.target.value); setCurrentTime(v); if(audioEl){ audioEl.currentTime = v } }}
+              style={{ width:'100%' }}
+            />
+            <div style={{display:'flex', justifyContent:'space-between'}}>
+              <span style={labelStyle}>{new Date(currentTime * 1000).toISOString().substr(14,5)}</span>
+              <span style={labelStyle}>{new Date((duration||0) * 1000).toISOString().substr(14,5)}</span>
+            </div>
+          </div>
+          <div style={{display:'flex', alignItems:'center', gap:'10px'}}>
+            <select
+              value={voice}
+              onChange={(e) => setVoice(e.target.value)}
+              style={{ padding:'8px 10px', borderRadius:'8px', border:'1px solid #e5e7eb'}}
+            >
+              <option value="alloy">Alloy</option>
+              <option value="verse">Verse</option>
+              <option value="aria">Aria</option>
+            </select>
+            <input
+              type="range"
+              min="0" max="1" step="0.01"
+              value={volume}
+              onChange={(e)=>{ const v = Number(e.target.value); setVolume(v); if(audioEl){ audioEl.volume = v } }}
+              style={{ width:'120px' }}
+            />
+          </div>
+        </div>
+
         <h1 style={titleStyle}>{story.title}</h1>
         
         <div style={storyStyle}>
@@ -208,21 +326,6 @@ const StoryReaderPage = ({ selectedTheme = 'candy' }) => {
             {isSaved ? '✅ Sparad!' : '💾 Spara i bibliotek'}
           </button>
 
-          <button
-            style={buttonStyle}
-            onClick={() => navigate('/create-story')}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)'
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(59, 130, 246, 0.4)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)'
-            }}
-          >
-            📝 Skapa ny saga
-          </button>
-          
           <button
             style={secondaryButtonStyle}
             onClick={() => navigate('/')}

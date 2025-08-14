@@ -1,4 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends
+from fastapi.responses import StreamingResponse, Response
+from fastapi import Query
+from tempfile import NamedTemporaryFile
 from fastapi.middleware.cors import CORSMiddleware
 import psycopg2
 import hashlib
@@ -23,6 +26,8 @@ app.add_middleware(
 
 # OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+OPENAI_TTS_MODEL = os.getenv("OPENAI_TTS_MODEL", "gpt-4o-mini-tts")
+OPENAI_TTS_VOICE = os.getenv("OPENAI_TTS_VOICE", "alloy")
 
 # Database connection
 def get_db():
@@ -78,6 +83,58 @@ def root():
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
+
+def _synthesize_tts_bytes(text: str, voice: str) -> bytes:
+    """Generate TTS audio bytes using OpenAI and return MP3 bytes."""
+    # Use streaming-to-file API for reliability, then return bytes
+    with NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
+        tmp_path = tmp.name
+    try:
+        with client.audio.speech.with_streaming_response.create(
+            model=OPENAI_TTS_MODEL,
+            voice=voice,
+            input=text,
+        ) as response:
+            response.stream_to_file(tmp_path)
+        with open(tmp_path, "rb") as f:
+            audio_bytes = f.read()
+        try:
+            os.remove(tmp_path)
+        except Exception:
+            pass
+        return audio_bytes
+    except Exception as exc:
+        # Clean up file if OpenAI failed
+        try:
+            os.remove(tmp_path)
+        except Exception:
+            pass
+        raise exc
+
+
+# Text-to-Speech for a specific story (Swedish input)
+@app.get("/stories/{story_id}/tts")
+def tts_story(story_id: int, voice: str = Query(default=OPENAI_TTS_VOICE)):
+    # Fetch story text
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT content FROM stories WHERE id = %s", (story_id,))
+    row = cur.fetchone()
+    conn.close()
+
+    if not row:
+        raise HTTPException(404, "Story not found")
+
+    text = row[0] or ""
+    if not text.strip():
+        raise HTTPException(400, "Story has no content")
+
+    try:
+        audio_bytes = _synthesize_tts_bytes(text, voice)
+        return Response(content=audio_bytes, media_type="audio/mpeg")
+    except Exception as e:
+        print(f"OpenAI TTS error: {e}")
+        raise HTTPException(500, "TTS generation failed")
 
 @app.post("/login")
 def login(request: LoginRequest):
@@ -337,6 +394,38 @@ def get_universal_story(story_id: str, user_id: int = 1):  # TODO: Get user_id f
         "content": stories[story_id],
         "storyType": "universal"
     }
+
+# TTS for universal stories (Swedish), personalized by user_id
+@app.get("/universal-stories/{story_id}/tts")
+def tts_universal_story(story_id: str, user_id: int = 1, voice: str = Query(default=OPENAI_TTS_VOICE)):
+    # Personalize content the same way as in get_universal_story
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT story_age, story_complexity FROM users WHERE id = %s", (user_id,))
+    user = cur.fetchone()
+    age, _ = (user[0] or 5, user[1] or "medium") if user else (5, "medium")
+    conn.close()
+
+    stories = {
+        "cinderella": f"En gång i tiden fanns en snäll {age}-årig flicka som hette Askungen...",
+        "little_red": f"Det var en gång en modig {age}-årig flicka som kallades Rödluvan...",
+        "three_pigs": f"Tre små grisar, alla {age} år gamla, bestämde sig för att bygga egna hus...",
+        "goldilocks": f"En nyfiken {age}-årig flicka som hette Guldlock gick vilse i skogen...",
+        "space_adventure": f"Astronaut {age}-åring Max startade sitt rymdskepp...",
+        "underwater_quest": f"Den {age}-åriga dykaren Emma dök ner i det blå havet...",
+    }
+
+    if story_id not in stories:
+        raise HTTPException(404, "Universal story not found")
+
+    text = stories[story_id]
+
+    try:
+        audio_bytes = _synthesize_tts_bytes(text, voice)
+        return Response(content=audio_bytes, media_type="audio/mpeg")
+    except Exception as e:
+        print(f"OpenAI TTS error (universal): {e}")
+        raise HTTPException(500, "TTS generation failed")
 
 @app.on_event("startup")
 def create_tables():
