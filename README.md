@@ -97,4 +97,29 @@ docker-compose up
 - Säkerhetskontroller
 - Aktivitetsloggar
 
+<<<<<<< HEAD
 *Skapad med omtanke för att sprida glädje genom berättelser*
+=======
+<<<<<<< HEAD
+##  Development Notes
+
+- Kom ihåg att commita ofta! 
+- Använd feature branches för nya funktioner
+- Skriv tester för kritisk funktionalitet
+- Dokumentera API-endpoints.
+2. **Create Feature Branch**: `git checkout -b feature/amazing-feature`
+3. **Code Away**: Bygg  genom berättelser* 
+=======
+
+
+1. **Clone & Setup**: Följ instruktionerna ovan
+2. **Create Feature Branch**: `git checkout -b feature/amazing-feature`
+3. **Code Away**: Bygg något fantastiskt!
+4. **Commit Often**: `git commit -m "Add amazing feature"`
+5. **Push & Celebrate**: 🎉
+
+---
+
+*Skapad med omtanke för att sprida glädje genom berättelser* 
+>>>>>>> 5bb1609 (lagt till text to speech)
+>>>>>>> f86ed1c (fixade universal tales)

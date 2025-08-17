@@ -101,6 +101,9 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
   const [isLoadingSaved, setIsLoadingSaved] = useState(false)
   const [loadSavedError, setLoadSavedError] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
+  const [universalStories, setUniversalStories] = useState([])
+  const [isLoadingUniversal, setIsLoadingUniversal] = useState(false)
+  const [loadUniversalError, setLoadUniversalError] = useState(null)
 
   const mainStyle = {
     minHeight: '100vh',
@@ -141,6 +144,28 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
       fetchSavedStories()
     }
   }, [currentView, user])
+
+  // Load universal stories when switching to "universella-sagor"
+  useEffect(() => {
+    const fetchUniversal = async () => {
+      setIsLoadingUniversal(true)
+      setLoadUniversalError(null)
+      try {
+        const res = await fetch('http://localhost:8000/universal-stories')
+        if (!res.ok) throw new Error('Kunde inte hämta universella sagor')
+        const data = await res.json()
+        setUniversalStories(Array.isArray(data.stories) ? data.stories : [])
+      } catch (err) {
+        setLoadUniversalError(err.message || 'Fel vid hämtning av universella sagor')
+        setUniversalStories([])
+      } finally {
+        setIsLoadingUniversal(false)
+      }
+    }
+    if (currentView === 'universella-sagor') {
+      fetchUniversal()
+    }
+  }, [currentView])
 
   const containerStyle = {
     maxWidth: '1200px',
@@ -787,17 +812,42 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
   )
 
   const renderUniversellaSagorView = () => {
-    const universalStories = [
-      { id: 1, title: 'Askungen', description: 'En klassisk saga om vänlighet och magi', icon: '👸' },
-      { id: 2, title: 'De tre små grisarna', description: 'En berättelse om mod och planering', icon: '🐷' },
-      { id: 3, title: 'Rödluvan', description: 'En spännande vandring genom skogen', icon: '🔴' },
-      { id: 4, title: 'Guldlock och de tre björnarna', description: 'En saga om nyfikenhet och respekt', icon: '🐻' },
-      { id: 5, title: 'Törnrosa', description: 'En magisk berättelse om sömn och kärlek', icon: '🌹' },
-      { id: 6, title: 'Snövit', description: 'En saga om vänskap och ärlighet', icon: '🍎' }
-    ]
-
+    const thumbById = {
+      cinderella: '/assets/shapes/flower.png',
+      little_red: '/assets/shapes/heart.png',
+      three_pigs: '/assets/shapes/rabbit.png',
+      goldilocks: '/assets/shapes/rabbit.png',
+      snow_white: '/assets/shapes/flower.png',
+      sleeping_beauty: '/assets/shapes/star.png'
+    }
     return (
     <>
+        <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '0 20px 12px', display: 'flex', justifyContent: 'flex-start' }}>
+          <button
+            onClick={() => setCurrentView('bibliotek')}
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px 12px',
+              fontSize: '14px',
+              fontWeight: '600',
+              color: '#1f2937',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-1px)'
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'
+            }}
+          >
+            ← Tillbaka
+          </button>
+        </div>
         <div style={{ marginBottom: '32px' }}>
           <h2 style={{
             fontSize: '24px',
@@ -819,14 +869,23 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
           </p>
         </div>
 
+        {isLoadingUniversal && (
+          <div style={{ color: currentTheme.textColor, opacity: 0.8, textAlign: 'center' }}>Laddar universella sagor...</div>
+        )}
+        {loadUniversalError && (
+          <div style={{ color: '#b91c1c', textAlign: 'center', marginBottom: '16px' }}>{loadUniversalError}</div>
+        )}
+
       <div style={{ 
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: '20px',
+          gridTemplateColumns: 'repeat(3, 250px)',
+          gap: '16px',
           maxWidth: '1200px',
           width: '100%',
           margin: '0 auto',
-          padding: '0 20px'
+          padding: '20px',
+          justifyContent: 'center',
+          alignItems: 'start'
         }}>
           {universalStories.map((story) => (
             <div
@@ -835,21 +894,30 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
                 borderRadius: '16px',
                 padding: '24px',
-                boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+                boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
                 backdropFilter: 'blur(10px)',
                 border: '1px solid rgba(255, 255, 255, 0.2)',
-                minHeight: '160px',
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-                textAlign: 'center'
+                width: '250px',
+                minHeight: '200px',
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                textAlign: 'center',
+                flexShrink: 0
               }}
-              onClick={() => {
-                // TODO: Open story reader with this universal story
-                alert(`Läser "${story.title}" - kommer snart från backend!`)
+              onClick={async () => {
+                try {
+                  const res = await fetch(`http://localhost:8000/universal-stories/${encodeURIComponent(story.id)}`)
+                  if (!res.ok) throw new Error('Kunde inte hämta sagan')
+                  const data = await res.json()
+                  const fullStory = { ...data, id: story.id, title: story.title, storyType: 'universal' }
+                  navigate('/story-reader', { state: { story: fullStory } })
+                } catch (err) {
+                  alert('Kunde inte öppna sagan just nu')
+                }
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-4px)'
@@ -860,9 +928,15 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
                 e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)'
               }}
             >
-              <div style={{ fontSize: '48px', marginBottom: '12px' }}>
-                {story.icon}
-              </div>
+              {String(story.id) === 'three_pigs' ? (
+                <div style={{ fontSize: '32px', marginBottom: '10px' }}>🐷</div>
+              ) : (
+                <img
+                  src={thumbById[String(story.id)] || '/assets/stamps/star.png'}
+                  alt={story.title}
+                  style={{ width: '32px', height: '32px', objectFit: 'contain', marginBottom: '10px' }}
+                />
+              )}
               <h3 style={{
                 fontSize: '18px',
                 fontWeight: '700',

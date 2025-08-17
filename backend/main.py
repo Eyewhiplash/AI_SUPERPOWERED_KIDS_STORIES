@@ -462,111 +462,62 @@ def delete_story(story_id: int):
 
 @app.get("/universal-stories")
 def get_universal_stories():
-    # Predefined universal stories
-    universal_stories = [
-        {
-            "id": "cinderella",
-            "title": "Askungen",
-            "description": "En klassisk saga om en snäll tjej och en glassko",
-            "icon": "👗",
-            "category": "Klassiska sagor"
-        },
-        {
-            "id": "little_red",
-            "title": "Rödluvan",
-            "description": "En ung flicka möter en stor stygga varg",
-            "icon": "🐺",
-            "category": "Klassiska sagor"
-        },
-        {
-            "id": "three_pigs",
-            "title": "De tre små grisarna",
-            "description": "Tre grisar bygger hus för att skydda sig",
-            "icon": "🐷",
-            "category": "Klassiska sagor"
-        },
-        {
-            "id": "goldilocks",
-            "title": "Guldlock",
-            "description": "En nyfiken flicka besöker björnarnas hus",
-            "icon": "🐻",
-            "category": "Klassiska sagor"
-        },
-        {
-            "id": "space_adventure",
-            "title": "Rymdäventyret",
-            "description": "Utforska galaxer och träffa rymdvarelser",
-            "icon": "🚀",
-            "category": "Moderna äventyr"
-        },
-        {
-            "id": "underwater_quest",
-            "title": "Undervattensresan",
-            "description": "Dyk ner i oceanens djup",
-            "icon": "🐠",
-            "category": "Moderna äventyr"
-        }
-    ]
-    
-    return {"stories": universal_stories}
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT id, title, description, COALESCE(icon, ''), COALESCE(category, '')
+        FROM universal_stories
+        ORDER BY title ASC
+        """
+    )
+    rows = cur.fetchall()
+    conn.close()
+    stories = []
+    for r in rows:
+        stories.append({
+            "id": r[0],
+            "title": r[1],
+            "description": r[2],
+            "icon": r[3] or "",
+            "category": r[4] or ""
+        })
+    return {"stories": stories}
 
 @app.get("/universal-stories/{story_id}")
 def get_universal_story(story_id: str, user_id: int = 1):  # TODO: Get user_id from token
-    # Get user settings for personalization
     conn = get_db()
     cur = conn.cursor()
-    
-    cur.execute("SELECT story_age, story_complexity FROM users WHERE id = %s", (user_id,))
-    user = cur.fetchone()
-    age, complexity = (user[0] or 5, user[1] or "medium") if user else (5, "medium")
-    
+    cur.execute(
+        """
+        SELECT id, title, content
+        FROM universal_stories
+        WHERE id = %s
+        """,
+        (story_id,)
+    )
+    row = cur.fetchone()
     conn.close()
-    
-    # Universal story templates
-    stories = {
-        "cinderella": f"En gång i tiden fanns en snäll {age}-årig flicka som hette Askungen...",
-        "little_red": f"Det var en gång en modig {age}-årig flicka som kallades Rödluvan...",
-        "three_pigs": f"Tre små grisar, alla {age} år gamla, bestämde sig för att bygga egna hus...",
-        "goldilocks": f"En nyfiken {age}-årig flicka som hette Guldlock gick vilse i skogen...",
-        "space_adventure": f"Astronaut {age}-åring Max startade sitt rymdskepp...",
-        "underwater_quest": f"Den {age}-åriga dykaren Emma dök ner i det blå havet..."
-    }
-    
-    if story_id not in stories:
+    if not row:
         raise HTTPException(404, "Universal story not found")
-    
     return {
-        "id": story_id,
-        "title": story_id.replace("_", " ").title(),
-        "content": stories[story_id],
+        "id": row[0],
+        "title": row[1],
+        "content": row[2],
         "storyType": "universal"
     }
 
-# TTS for universal stories (Swedish), personalized by user_id
+# TTS for universal stories (Swedish)
 @app.get("/universal-stories/{story_id}/tts")
 def tts_universal_story(story_id: str, user_id: int = 1, voice: str = Query(default=OPENAI_TTS_VOICE)):
-    # Personalize content the same way as in get_universal_story
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("SELECT story_age, story_complexity FROM users WHERE id = %s", (user_id,))
-    user = cur.fetchone()
-    age, _ = (user[0] or 5, user[1] or "medium") if user else (5, "medium")
+    cur.execute("SELECT content FROM universal_stories WHERE id = %s", (story_id,))
+    row = cur.fetchone()
     conn.close()
-
-    stories = {
-        "cinderella": f"En gång i tiden fanns en snäll {age}-årig flicka som hette Askungen...",
-        "little_red": f"Det var en gång en modig {age}-årig flicka som kallades Rödluvan...",
-        "three_pigs": f"Tre små grisar, alla {age} år gamla, bestämde sig för att bygga egna hus...",
-        "goldilocks": f"En nyfiken {age}-årig flicka som hette Guldlock gick vilse i skogen...",
-        "space_adventure": f"Astronaut {age}-åring Max startade sitt rymdskepp...",
-        "underwater_quest": f"Den {age}-åriga dykaren Emma dök ner i det blå havet...",
-    }
-
-    if story_id not in stories:
+    if not row:
         raise HTTPException(404, "Universal story not found")
-
-    text = stories[story_id]
-
+    text = row[0]
     try:
         audio_bytes = _synthesize_tts_bytes(text, voice)
         return Response(content=audio_bytes, media_type="audio/mpeg")
@@ -576,31 +527,20 @@ def tts_universal_story(story_id: str, user_id: int = 1, voice: str = Query(defa
 
 @app.post("/universal-stories/{story_id}/images")
 def generate_universal_story_images(story_id: str, user_id: int = 1, num_images: int = Query(default=3, ge=1, le=6), size: str = Query(default="1024x1024")):
-    """Generera 1-6 bilder för en universell saga (baserad på personlig ålder)."""
+    """Generera 1-6 bilder för en universell saga."""
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("SELECT story_age, story_complexity FROM users WHERE id = %s", (user_id,))
-    user = cur.fetchone()
-    age, _ = (user[0] or 5, user[1] or "medium") if user else (5, "medium")
+    cur.execute("SELECT title, content FROM universal_stories WHERE id = %s", (story_id,))
+    row = cur.fetchone()
     conn.close()
-
-    stories = {
-        "cinderella": f"En gång i tiden fanns en snäll {age}-årig flicka som hette Askungen...",
-        "little_red": f"Det var en gång en modig {age}-årig flicka som kallades Rödluvan...",
-        "three_pigs": f"Tre små grisar, alla {age} år gamla, bestämde sig för att bygga egna hus...",
-        "goldilocks": f"En nyfiken {age}-årig flicka som hette Guldlock gick vilse i skogen...",
-        "space_adventure": f"Astronaut {age}-åring Max startade sitt rymdskepp...",
-        "underwater_quest": f"Den {age}-åriga dykaren Emma dök ner i det blå havet...",
-    }
-    if story_id not in stories:
+    if not row:
         raise HTTPException(404, "Universal story not found")
-
-    content = stories[story_id]
+    title, content = row[0], row[1]
     prompts = _generate_image_prompts_from_story(content, num_images=num_images)
     images = _generate_images_from_prompts(prompts, size=size)
     if not images:
         raise HTTPException(500, "Image generation failed")
-    return {"title": story_id.replace("_", " ").title(), "images": images, "prompts": prompts}
+    return {"title": title, "images": images, "prompts": prompts}
 
 @app.on_event("startup")
 def create_tables():
@@ -650,6 +590,91 @@ def create_tables():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
+    # Universal stories table
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS universal_stories (
+            id VARCHAR(50) PRIMARY KEY,
+            title VARCHAR(200) NOT NULL,
+            description VARCHAR(300) NOT NULL,
+            icon VARCHAR(10),
+            category VARCHAR(100),
+            content TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    # Remove non-classic/unwanted entries
+    try:
+        cur.execute("DELETE FROM universal_stories WHERE id IN (%s,%s,%s)", (
+            'underwater_quest', 'space_adventure', 'goldilocks'
+        ))
+    except Exception:
+        pass
+
+    # Seed/refresh universal stories (upsert canonical content)
+    seeds = [
+            (
+                "cinderella",
+                "Askungen",
+                "En klassisk berättelse om vänlighet, tålamod och att våga hoppas.",
+                "",
+                "Klassiska sagor",
+                "Det var en gång en snäll flicka som kallades Askungen. Hon hjälpte till från morgon till kväll, och fast dagarna var långa behöll hon sin värme och sin dröm om något mer. Varje kväll tittade hon på stjärnorna och tänkte att världen måste vara större än gården där hon sopade och tvättade.\n\nEn dag kom ett bud att slottet skulle hålla en stor fest. Alla i trakten talade om musik, ljus och glitter. Askungen log försiktigt och önskade i sitt hjärta att få vara där, bara en liten stund, för att höra orkestern och se hur ljuskronorna glimmade. När hon trodde att hoppet var borta dök en vänlig fe upp och viskade: \"Din vänlighet har kraft. Låt oss öppna en dörr.\" Med ett mjukt svep förvandlades hennes slitna klänning till något enkelt men vackert, och ett par skor glittrade som nyfallen frost.\n\nPå slottet kände Askungen musiken som ett varmt andetag. She dansade varsamt, skrattade och talade med människor som lyssnade på henne precis som hon var. När klockan började ringa sitt sena slag mindes hon feens ord: det magiska var till låns. Hon sprang genom gården, och ena skon föll av i trappan. Hon vände sig om, log, och fortsatte hem i gryningens stilla ljus.\n\nDagarna som följde sökte slottsfolket efter den vars hjärta matchade skons glans. När de kom till Askungen var alla tysta. Skon passade inte bara hennes fot; den passade hennes mod. Hon valde ett liv där hon fick vara trygg, sedd och fri att drömma vidare. Och i den nya vardagen glömde hon aldrig stunderna av vänlighet som bar henne hit.\n\nSå lärde sig alla runt henne att tålamod, omtanke och hopp kan tända ljus i de mörkaste hörn. Och när kvällarna blev stilla, lyssnade Askungen fortfarande till musiken inom sig och delade sin värme med alla som behövde den.",
+            ),
+            (
+                "little_red",
+                "Rödluvan",
+                "En berättelse om mod, klokskap och att lyssna på goda råd.",
+                "",
+                "Klassiska sagor",
+                "Rödluvan fick i uppdrag att hälsa på sin mormor och ta med en korg med bröd och soppa. Skogen framför henne var grön och mjuk, men stigarna delade sig då och då. Hon stannade vid första korsningen och andades lugnt. Hon mindes rådet: \"Välj vägen som känns trygg. Titta, lyssna och ta din tid.\"\n\nLängs vägen hörde hon fåglarna, såg solljuset dansa mellan bladen och märkte hur vinden viskade mellan träden. En skugga rörde sig längre in bland granarna. Rödluvan blev stilla och kände efter. Hon valde den öppna stigen, där hon såg långt, och fortsatte i jämn takt. När en räv dök upp och nyfiket tittade på korgen log hon och höll avstånd, lät räven gå före och gav den en vänlig nick.\n\nNär hon kom fram var mormor trött och behövde vila. Rödluvan värmde soppa, la en filt över axlarna och berättade om skogens ljus. De talade om mod som inte alltid är att springa fort, utan att våga stanna, tänka och välja lugnet. Mormors ögon glittrade när hon hörde hur Rödluvan lyssnat till både naturen och sin egen röst.\n\nPå eftermiddagen gick de en liten bit tillsammans ut på gården. Mormor pekade ut bärbuskar och berättade vilka som mognar först. Rödluvan skrev ner små tips på en lapp och stoppade den i fickan. När kvällen kom och himlen blev rosa, kramade de varandra länge.\n\nRödluvan gick hem den kvällen med ett hjärta som var både starkt och mjukt. Hon visste att klokskap växer med varje vänlig handling, och att mod ibland är att lyssna, välja rätt stig och dela sin omsorg med andra.",
+            ),
+            (
+                "three_pigs",
+                "De tre små grisarna",
+                "En saga om att planera, hjälpas åt och bygga något som håller.",
+                "",
+                "Klassiska sagor",
+                "Tre små grisar bestämde sig för att bygga varsitt hem. Den första ville bli klar fort och satte upp väggar av halm. Det såg fint ut i solskenet, men när grisen tryckte på väggarna gungade de. Den andra tog pinnar och band ihop dem. Det blev stadigare, men när hon knackade på dörrkarmen svajade den lite. Den tredje grisen satte sig ner med papper och penna och ritade. \"Om vi tar det lugnt, blir det starkt,\" sa hon och log.\n\nGrisarna hjälptes åt att bära tegel, blanda lera och mäta noga. De vilade när de blev trötta, åt tillsammans och pratade om hur ett hem ska kännas: varmt, tryggt och välkomnande för vänner. När väggarna reste sig kände de en blandning av trötthet och stolthet. Den tredje grisen knackade på hörnen och lyssnade på det fasta klingandet.\n\nEn kväll kom en hård vind över fälten. Halmhuset prasslade och porthaken hoppade till. Grisen sprang skrattande till pinhuset, och tillsammans stöttade de dörren. När vinden tog i igen sprang de vidare till tegelhuset. De öppnade dörren, tände en liten lampa och kokade soppa. Utanför brusade vinden, men inne var det lugnt.\n\nDe tre grisarna satt tätt och delade bröd och historier. De skrattade åt det vingliga bordet i halmhuset och lovade att göra det stadigare nästa gång. De ritade små förbättringar: en starkare dörr, ett fönster som slöt tätt, en hylla för böcker och te. När vinden mojnade gick de ut tillsammans för att se över allt och hjälpa varandra.\n\nFrån den dagen byggde de inte längre var för sig. De byggde tillsammans, långsamt och omsorgsfullt, så att ingen behövde vara ensam när det blåste. Och när nya vänner kom förbi, visade de gärna hur man planerar, provar, rättar till och skapar något som håller, steg för steg.",
+            ),
+            (
+                "hansel_gretel",
+                "Hans och Greta",
+                "En klassisk saga om syskonmod, list och att hitta hem tillsammans.",
+                "",
+                "Klassiska sagor",
+                "Två syskon vandrade i skogen där stigen ibland försvann under barr och skugga. De delade sista brödbiten mellan sig och gjorde upp små märken på trädens bark för att minnas vägen. Skogen var stor, men deras händer höll fast i varandra.\n\nNär hungern blev som störst såg de ett märkligt hus. Väggarna doftade sött och taket glimmade som socker i sol. De tog ett steg närmare, sedan ett till, och knackade försiktigt. Dörren öppnades, och en röst som lät vänlig men trött bad dem stiga in. Syskonen såg på varandra och gick in, med nyfikenhet i bröstet och försiktighet i stegen.\n\nHuset dolde hemligheter. Syskonen märkte snart att vänligheten var tunn som glas, och under ytan fanns något hårt. De talade lågt om hur de skulle hjälpas åt att komma därifrån. Greta iakttog hur låsen fungerade och var veden låg; Hans lyssnade efter när stegen lät tyngre i korridoren.\n\nEn natt dånade en storm över skogen. Medan vinden slet i grenarna tog syskonen sin chans. De ställde ut stenarna de sparat, låste upp en dörr, och lät eldens knastrande dölja deras steg. De sprang mot mörkret, men mörkret var inte längre skrämmande: de sprang tillsammans.\n\nVid gryningen fann de en glänta där ljuset landade som varma händer. De följde en bäck som pratade vänligt med stenarna, och snart kände de igen ett gammalt träd med en gren som pekade som en kompass. Hemma väntade armar som trodde att allt var förlorat men som nu fick börja om, långsamt och sant.\n\nSyskonen berättade inte sin saga för att väcka rädsla, utan för att påminna om att list kan vara mjuk, att mod kan vara tyst, och att man alltid hittar hem lättare när man håller ihop. Skogen stod kvar, men den kändes inte längre oändlig.",
+            ),
+            (
+                "snow_white",
+                "Snövit",
+                "En klassisk saga om vänskap, mod och godhetens kraft.",
+                "",
+                "Klassiska sagor",
+                "I ett litet rike växte Snövit upp med ett hjärta som alltid sökte det goda. När skogen blev hennes tillflykt mötte hon sju vänliga vänner som gav plats åt värme och skratt. De delade arbete och mat, lyssnade på varandra och lät dagarna få sin lugna rytm.\n\nEn dag prövades deras vänskap av ett svek, men Snövits mod växte ur omtanke. Hon litade på sina vänner, och de stod vid hennes sida när mörkret kändes nära. Tillsammans fann de en väg tillbaka till ljuset.\n\nSnövit lärde alla omkring sig att vänlighet inte är svaghet, utan styrkan som håller oss upprätta. Och när våren kom tillbaka, kändes världen mjukare och tryggare än förut.",
+            ),
+            (
+                "sleeping_beauty",
+                "Törnrosa",
+                "En klassisk berättelse om tid, hopp och att vakna till ett nytt kapitel.",
+                "",
+                "Klassiska sagor",
+                "I ett stilla slott somnade en prinsessa, och hela riket sänkte rösten. Åren gled förbi som mjuka moln, men hoppet somnade aldrig. Rosor växte runt murarna och påminde alla som gick förbi att vila också är en del av livet.\n\nNär tiden var mogen bröts tystnaden. Prinsessan vaknade inte till buller, utan till hjärtans stilla glädje. Fönstren öppnades, ljuset föll på golven och musiken fann sin väg genom rummen.\n\nAlla lärde sig att väntan kan bära något gott, och att kärlek är det som väcker oss varsamt när det nya kapitlet börjar.",
+            ),
+        ]
+    cur.executemany(
+        """
+        INSERT INTO universal_stories (id, title, description, icon, category, content)
+        VALUES (%s, %s, %s, %s, %s, %s)
+        ON CONFLICT (id) DO UPDATE SET
+          title = EXCLUDED.title,
+          description = EXCLUDED.description,
+          icon = EXCLUDED.icon,
+          category = EXCLUDED.category,
+          content = EXCLUDED.content
+        """,
+        seeds,
+    )
     
     conn.commit()
     conn.close() 
