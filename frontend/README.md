@@ -1,34 +1,29 @@
 # Frontend (React + Vite)
 
-Frontend för AI Kids Stories byggd med React och Vite.
+React‑frontend för AI Kids Stories.
 
-## Kom igång
+## Körning
 
 ```bash
-cd frontend
-npm install
-npm run dev
+cd AI_SUPERPOWERED_KIDS_STORIES/frontend
+npm run dev -- --port 3000 --host 0.0.0.0
 ```
 
-Servern startar på `http://localhost:3000` eller närliggande port (Vite väljer ledig).
+Öppna http://localhost:3000
 
-## Struktur (kort)
+## Struktur
 
 - `src/App.jsx` – rutter och huvudlayout
-- `src/contexts/AuthContext.jsx` – inloggning, register, användarinställningar
+- `src/contexts/AuthContext.jsx` – inloggning/registrering/inställningar
 - `src/pages/*` – sidor (Hem, Skapa saga, Läsare, Login, Register, Inställningar, m.fl.)
-- `src/components/*` – header, footer, felhanterare m.m.
+- `src/components/*` – återanvändbara komponenter
 
-## Miljö och API
+## API‑integration
 
-Frontend pratar med backend på `http://localhost:8000`:
-- `POST /login`, `POST /register`
-- `PUT /users/{id}/settings`
-- `POST /stories`, `GET /stories`
-- `GET /universal-stories`
+Frontend anropar backend på `http://localhost:8000` och skickar JWT i `Authorization: Bearer <token>` för skyddade endpoints.
 
-## Utvecklingstips
-
-- Mobil-/surfplattelayout är optimerad med media queries i `src/index.css`
-- Fel fångas globalt via `components/ErrorBoundary.jsx`
-- Inloggningstillstånd lagras i `localStorage`
+Exempel på flöden:
+- Inloggning: `POST /login`
+- Sagor: `POST /stories`, `GET /stories`, `DELETE /stories/{id}`
+- Bilder/TTS: `POST /stories/{id}/images`, `GET /stories/{id}/images`, `GET /stories/{id}/tts`
+- Universella sagor: `GET /universal-stories`, `GET /universal-stories/{id}`, `GET /universal-stories/{id}/tts`

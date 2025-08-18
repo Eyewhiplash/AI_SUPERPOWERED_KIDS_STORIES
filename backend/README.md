@@ -1,63 +1,50 @@
-# AI Kids Stories - Backend API
+# Backend (FastAPI)
 
-Enkel FastAPI-backend för AI-sagor med användare, inställningar och PostgreSQL.
+FastAPI‑backend för AI‑sagor med användare, JWT‑auth, bilder och TTS, PostgreSQL och Alembic‑migrationer.
 
 ## Teknik
 
 - FastAPI (Python 3.11)
 - PostgreSQL 15
 - Docker och Docker Compose
-- Lösenordshashning (sha256)
-- OpenAI GPT-4o mini för sagogenerering
+- Lösenordshashning: bcrypt (auto‑uppgradering från legacy sha256 vid inloggning)
+- JWT‑autentisering
+- OpenAI (GPT/TTS/bilder)
+- Alembic för schema/seed
 
-## Strukturoversikt
+## Struktur
 
 ```
 backend/
-├── main.py                # Hela API:et (alla endpoints)
-├── docker-compose.yml     # Docker (API + PostgreSQL)
-├── requirements.txt       # Python-beroenden
-├── Dockerfile             # Bygg image för API
-├── .env                   # Miljövariabler (inte committa hemligheter)
-└── README.md
+├── main.py                 # App‑bootstrap (CORS, felhantering, routers)
+├── config.py               # Miljö/inställningar
+├── db.py                   # DB‑anslutning
+├── security.py             # JWT
+├── routers/
+│   ├── auth.py             # /login, /register
+│   ├── stories.py          # egna sagor, bilder, TTS
+│   └── universal.py        # universella sagor, TTS/bilder
+├── services/openai_service.py
+├── migrations/             # Alembic (schema + seed)
+├── requirements.txt        # Python‑beroenden
+├── docker-compose.yml      # API + DB (dev)
+└── Dockerfile              # API‑image
 ```
 
-## Kom igång
+## Körning (Docker)
 
-1. Gå till backend-mappen
-   ```bash
-   cd backend
-   ```
-2. Starta med Docker
-   ```bash
-   docker-compose up --build
-   ```
-3. API finns på
-   - http://localhost:8000
-   - Dokumentation: http://localhost:8000/docs
-   - Health: http://localhost:8000/health
+```bash
+cd AI_SUPERPOWERED_KIDS_STORIES/backend
+docker compose up -d --build
+docker compose run --rm api alembic upgrade head
+```
 
-## API-endpoints (urval)
+API finns på:
+- http://localhost:8000
+- Health: http://localhost:8000/health
 
-- `POST /register` – skapa användare
-- `POST /login` – logga in, returnerar id, username, settings
-- `PUT /users/{user_id}/settings` – uppdatera ålder/komplexitet
-- `POST /stories` – skapa saga (sparas i DB)
-- `GET /stories` – lista användarens sagor
-- `GET /stories/{id}` – hämta saga
-- `DELETE /stories/{id}` – ta bort saga
-- `GET /universal-stories` – lista universella sagor
-- `GET /universal-stories/{id}` – hämta universell saga
+## Miljövariabler (exempel .env)
 
-## Databas
-
-Tabeller skapas automatiskt vid start:
-- `users` (username, password, story_age, story_complexity)
-- `stories` (user_id, title, content, story_type, created_at)
-
-## Miljövariabler
-
-Hanternas via `.env` (exempel):
 ```
 POSTGRES_USER=user
 POSTGRES_PASSWORD=pass
@@ -66,19 +53,30 @@ DB_HOST=db
 DB_NAME=stories
 DB_USER=user
 DB_PASS=pass
-OPENAI_API_KEY=...din nyckel...
-OPENAI_MODEL=gpt-4o-mini
+OPENAI_API_KEY=...
+OPENAI_TTS_MODEL=gpt-4o-mini-tts
+OPENAI_TTS_VOICE=alloy
+OPENAI_IMAGE_MODEL=gpt-image-1
+OPENAI_IMAGE_FALLBACK_MODEL=dall-e-3
+CORS_ALLOW_ORIGINS=*
+JWT_SECRET=change-me-in-prod
+JWT_ALGORITHM=HS256
+JWT_EXP_MINUTES=60
 ```
 
-`docker-compose.yml` läser dessa värden. Ändra aldrig hemligheter i koden – uppdatera `.env` istället.
+## API‑urval
 
-## Vanliga Docker-kommandon
+- `POST /register`, `POST /login`
+- `PUT /users/{user_id}/settings`
+- `POST /stories`, `GET /stories`, `GET /stories/{id}`, `DELETE /stories/{id}`
+- `POST /stories/{id}/images`, `GET /stories/{id}/images`, `GET /stories/{id}/tts`
+- `GET /universal-stories`, `GET /universal-stories/{id}`, `GET /universal-stories/{id}/tts`
+
+## Vanliga Docker‑kommandon
 
 ```bash
-docker-compose up               # starta
-docker-compose up -d            # starta i bakgrunden
-docker-compose up --build       # bygg om
-docker-compose logs -f api      # följ API-loggar
-docker-compose down             # stoppa
-docker-compose down -v          # stoppa och rensa DB-volym
+docker compose up -d --build     # starta
+docker compose logs -f api       # följ API‑loggar
+docker compose down              # stoppa
+docker compose down -v           # stoppa och rensa DB‑volym
 ```

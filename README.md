@@ -1,125 +1,69 @@
-#  AI Storyteller for Kids
+# AI Kids Stories
 
-> En magisk AI-driven berättarapplikation som skapar personliga sagor för barn
+AI‑driven webbapplikation som skapar och läser upp sagor för barn. Frontend i React, backend i FastAPI, datalagring i PostgreSQL och AI via OpenAI.
 
-##  Projektöversikt
-
-AI Storyteller är en säker och rolig webbapplikation där barn kan få personliga berättelser skapade av AI. Med föräldrakontroll och säker inloggning skapar vi en trygg miljö för kreativ storytelling.
-
-##  Tech Stack
-
-### Frontend
--  **React 18** med Vite (snabb utveckling)
--  **Tailwind CSS** (responsiv design)
--  **Säker autentisering** (JWT tokens)
-
-### Backend
--  **FastAPI** (async Python API)
--  **Pydantic** (datavalidering)
--  **PostgreSQL** (databas)
--  **Docker** (containerisering)
-
-### AI Integration
--  **OpenAI API** (story generation)
--  **Åldersanpassat innehåll**
-
-##  Projektstruktur
+## Projektstruktur
 
 ```
-main-project/
-├── frontend/          # React + Vite app
-├── backend/           # FastAPI server
-├── docker-compose.yml # Development environment
-└── README.md         # Du är här! 🎉
+AI_SUPERPOWERED_KIDS_STORIES/
+├── frontend/                 # React + Vite
+├── backend/                  # FastAPI API
+│   ├── config.py             # Miljö/inställningar
+│   ├── db.py                 # DB‑anslutning
+│   ├── security.py           # JWT
+│   ├── services/
+│   │   └── openai_service.py # Story, bilder, TTS
+│   ├── routers/
+│   │   ├── auth.py           # /login, /register
+│   │   ├── stories.py        # egna sagor, bilder, TTS
+│   │   └── universal.py      # universella sagor, TTS/bilder
+│   └── migrations/           # Alembic (schema + seed)
+├── docker-compose.yml        # Dev‑stack (API + Postgres)
+└── README.md                 # Denna fil
 ```
 
-##  Development Setup
+## Kom igång
 
-### Förutsättningar
-- Node.js 18+
-- Python 3.11+
-- Docker & Docker Compose
-- Git
+Förutsättningar: Docker, Docker Compose, Node.js 18+
 
-### Quick Start
+1) Starta backend (Docker)
 ```bash
-# Klona och navigera
-cd main-project
-
-# Setup frontend
-cd frontend
-npm install
-npm run dev
-
-# Setup backend
-cd ../backend
-pip install -r requirements.txt
-uvicorn main:app --reload
-
-# Eller kör allt med Docker
-docker-compose up
+cd AI_SUPERPOWERED_KIDS_STORIES/backend
+docker compose up -d --build
 ```
 
-##  Säkerhetsfunktioner
+2) Initiera databas (migreringar + seed)
+```bash
+docker compose run --rm api alembic upgrade head
+```
 
-- ✅ Password hashing (bcrypt/argon2)
-- ✅ JWT token authentication
-- ✅ Rollbaserad access control
-- ✅ Input sanitization
-- ✅ Rate limiting för API
-- ✅ CORS-konfiguration
+3) Starta frontend
+```bash
+cd ../frontend
+npm run dev -- --port 3000 --host 0.0.0.0
+```
 
-##  Features (Planerade)
+Backend: http://localhost:8000
 
-### MVP
-- [ ] Användarregistrering och inloggning
-- [ ] Grundläggande UI med barn-tema
-- [ ] Enkel AI story generation
-- [ ] Spara berättelser
+Frontend: http://localhost:3000
 
-### Future Features
-- [ ] Föräldrakontrollpanel
-- [ ] Anpassade karaktärer
-- [ ] Ljuduppläsning av berättelser
-- [ ] Delning av berättelser
-- [ ] Offline-läge
+## Miljövariabler (backend)
 
-##  Design Philosophy
+- DB_HOST, DB_NAME, DB_USER, DB_PASS
+- JWT_SECRET, JWT_ALGORITHM (HS256), JWT_EXP_MINUTES
+- OPENAI_API_KEY, OPENAI_TTS_MODEL, OPENAI_TTS_VOICE, OPENAI_IMAGE_MODEL, OPENAI_IMAGE_FALLBACK_MODEL
+- CORS_ALLOW_ORIGINS
 
-**För barn:**
-- Färgglad och lekfull UI
-- Stora, lättklickade knappar
-- Visuella ikoner och animationer
-- Enkel navigation
+## Autentisering
 
-**För föräldrar:**
-- Transparent vad barnet gör
-- Säkerhetskontroller
-- Aktivitetsloggar
+`POST /login` ger en JWT. Skicka `Authorization: Bearer <token>` till skyddade endpoints (exempelvis `POST /stories`, `GET /stories`, `DELETE /stories/{id}`, `PUT /users/{id}/settings`).
 
-<<<<<<< HEAD
-*Skapad med omtanke för att sprida glädje genom berättelser*
-=======
-<<<<<<< HEAD
-##  Development Notes
+## Vanliga kommandon
 
-- Kom ihåg att commita ofta! 
-- Använd feature branches för nya funktioner
-- Skriv tester för kritisk funktionalitet
-- Dokumentera API-endpoints.
-2. **Create Feature Branch**: `git checkout -b feature/amazing-feature`
-3. **Code Away**: Bygg  genom berättelser* 
-=======
+```bash
+docker compose up -d --build      # starta API + DB
+docker compose logs -f api        # följ API‑loggar
+docker compose down               # stoppa
+docker compose down -v            # stoppa och rensa DB‑volym
+```
 
-
-1. **Clone & Setup**: Följ instruktionerna ovan
-2. **Create Feature Branch**: `git checkout -b feature/amazing-feature`
-3. **Code Away**: Bygg något fantastiskt!
-4. **Commit Often**: `git commit -m "Add amazing feature"`
-5. **Push & Celebrate**: 🎉
-
----
-
-*Skapad med omtanke för att sprida glädje genom berättelser* 
->>>>>>> 5bb1609 (lagt till text to speech)
->>>>>>> f86ed1c (fixade universal tales)
