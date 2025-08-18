@@ -126,7 +126,11 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
       setIsLoadingSaved(true)
       setLoadSavedError(null)
       try {
-        const response = await fetch(`http://localhost:8000/stories?user_id=${user.id}`)
+        const response = await fetch(`http://localhost:8000/stories`, {
+          headers: {
+            ...(user?.token ? { 'Authorization': `Bearer ${user.token}` } : {})
+          }
+        })
         if (!response.ok) {
           throw new Error('Kunde inte hämta sparade sagor')
         }
@@ -610,10 +614,11 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
             
             setIsGenerating(true)
             try {
-              const response = await fetch(`http://localhost:8000/stories?user_id=${user?.id ?? 1}` , {
+              const response = await fetch(`http://localhost:8000/stories` , {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
+                  ...(user?.token ? { 'Authorization': `Bearer ${user.token}` } : {}),
                 },
                 body: JSON.stringify({
                   title: `Äventyr med ${storyData.character?.name}`,
@@ -776,7 +781,12 @@ const CreateStoryPage = ({ selectedTheme = 'candy' }) => {
                       if (!ok) return
                       try {
                         setDeletingId(s.id)
-                        const res = await fetch(`http://localhost:8000/stories/${s.id}`, { method: 'DELETE' })
+                        const res = await fetch(`http://localhost:8000/stories/${s.id}`, { 
+                          method: 'DELETE',
+                          headers: {
+                            ...(user?.token ? { 'Authorization': `Bearer ${user.token}` } : {})
+                          }
+                        })
                         if (!res.ok) throw new Error('Radering misslyckades')
                         setSavedStories(prev => prev.filter(st => st.id !== s.id))
                       } catch (err) {

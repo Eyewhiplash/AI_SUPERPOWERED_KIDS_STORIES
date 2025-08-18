@@ -8,28 +8,83 @@ import hashlib
 import os
 from typing import Optional, List
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from openai import OpenAI
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+import jwt
+from passlib.hash import bcrypt
+import logging
+from fastapi import Request
+from fastapi.responses import JSONResponse
 
 from schemas import LoginRequest, RegisterRequest, UpdateSettingsRequest, CreateStoryRequest
 
 app = FastAPI()
 
-# CORS
+# CORS (configurable)
+_cors_origins_env = os.getenv("CORS_ALLOW_ORIGINS", "*")
+if _cors_origins_env.strip() == "*":
+    _allow_origins = ["*"]
+    _allow_credentials = False
+else:
+    _allow_origins = [o.strip() for o in _cors_origins_env.split(',') if o.strip()]
+    _allow_credentials = True
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=_allow_origins,
+    allow_credentials=_allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Logging and global error handler
+logger = logging.getLogger("uvicorn.error")
+
+@app.exception_handler(Exception)
+def global_error_handler(request: Request, exc: Exception):
+    try:
+        logger.exception("Unhandled error on %s %s", request.method, request.url)
+    except Exception:
+        pass
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
+
 # OpenAI client
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"), timeout=float(os.getenv("OPENAI_TIMEOUT", "30")))
 OPENAI_TTS_MODEL = os.getenv("OPENAI_TTS_MODEL", "gpt-4o-mini-tts")
 OPENAI_TTS_VOICE = os.getenv("OPENAI_TTS_VOICE", "alloy")
 OPENAI_IMAGE_MODEL = os.getenv("OPENAI_IMAGE_MODEL", "gpt-image-1")
 OPENAI_IMAGE_FALLBACK_MODEL = os.getenv("OPENAI_IMAGE_FALLBACK_MODEL", "dall-e-3")
+
+# Auth / JWT
+security = HTTPBearer(auto_error=False)
+JWT_SECRET = os.getenv("JWT_SECRET", "change-me-in-prod")
+JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+JWT_EXP_MINUTES = int(os.getenv("JWT_EXP_MINUTES", "60"))
+
+def create_access_token(user_id: int) -> str:
+    now = datetime.utcnow()
+    payload = {
+        "sub": str(user_id),
+        "iat": int(now.timestamp()),
+        "exp": int((now + timedelta(minutes=JWT_EXP_MINUTES)).timestamp()),
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+def get_current_user_id(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)) -> int:
+    if not credentials or credentials.scheme.lower() != "bearer":
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    token = credentials.credentials
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        sub = payload.get("sub")
+        if not sub:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        return int(sub)
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid token")
 
 # Database connection
 def get_db():
@@ -40,9 +95,33 @@ def get_db():
         password=os.getenv("DB_PASS", "pass")
     )
 
-# Hash password
-def hash_password(password: str) -> str:
+# Password hashing
+def _sha256_hash(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
+
+def hash_password(password: str) -> str:
+    return bcrypt.hash(password)
+
+def verify_password(provided_password: str, stored_hash: str, user_id_for_upgrade: Optional[int] = None) -> bool:
+    # Prefer bcrypt
+    try:
+        if stored_hash.startswith("$2a$") or stored_hash.startswith("$2b$"):
+            return bcrypt.verify(provided_password, stored_hash)
+    except Exception:
+        pass
+    # Fallback to legacy sha256, and upgrade in-place if matches
+    if _sha256_hash(provided_password) == stored_hash:
+        if user_id_for_upgrade is not None:
+            try:
+                conn = get_db()
+                cur = conn.cursor()
+                cur.execute("UPDATE users SET password = %s WHERE id = %s", (hash_password(provided_password), user_id_for_upgrade))
+                conn.commit()
+                conn.close()
+            except Exception:
+                pass
+        return True
+    return False
 
 # Generate AI story using OpenAI GPT-4o mini
 def generate_ai_story(prompt: str, age: int, complexity: str) -> str:
@@ -287,28 +366,35 @@ def get_story_images(story_id: int):
 def login(request: LoginRequest):
     conn = get_db()
     cur = conn.cursor()
-    
-    # Check user and get settings
-    cur.execute("""
-        SELECT u.id, u.username, u.story_age, u.story_complexity 
-        FROM users u 
-        WHERE u.username = %s AND u.password = %s
-    """, (request.username, hash_password(request.password)))
-    user = cur.fetchone()
-    
+    # Fetch by username and verify password in app layer
+    cur.execute(
+        """
+        SELECT u.id, u.username, u.password, u.story_age, u.story_complexity
+        FROM users u
+        WHERE u.username = %s
+        """,
+        (request.username,)
+    )
+    user_row = cur.fetchone()
     conn.close()
-    
-    if user:
-        return {
-            "id": user[0],
-            "username": user[1],
-            "settings": {
-                "storyAge": user[2] or 5,
-                "storyComplexity": user[3] or "medium"
-            }
-        }
-    else:
+
+    if not user_row:
         raise HTTPException(401, "Invalid login")
+
+    user_id, username, stored_hash, story_age, story_complexity = user_row
+    if not verify_password(request.password, stored_hash, user_id_for_upgrade=user_id):
+        raise HTTPException(401, "Invalid login")
+
+    token = create_access_token(user_id)
+    return {
+        "id": user_id,
+        "username": username,
+        "settings": {
+            "storyAge": story_age or 5,
+            "storyComplexity": story_complexity or "medium",
+        },
+        "token": token,
+    }
 
 @app.post("/register")
 def register(request: RegisterRequest):
@@ -328,7 +414,9 @@ def register(request: RegisterRequest):
         raise HTTPException(400, "User already exists")
 
 @app.put("/users/{user_id}/settings")
-def update_user_settings(user_id: int, settings: UpdateSettingsRequest):
+def update_user_settings(user_id: int, settings: UpdateSettingsRequest, current_user_id: int = Depends(get_current_user_id)):
+    if current_user_id != user_id:
+        raise HTTPException(403, "Forbidden")
     conn = get_db()
     cur = conn.cursor()
     
@@ -353,12 +441,12 @@ def update_user_settings(user_id: int, settings: UpdateSettingsRequest):
     return {"message": "Settings updated"}
 
 @app.post("/stories")
-def create_story(story: CreateStoryRequest, user_id: int = 1):  # TODO: Get user_id from token
+def create_story(story: CreateStoryRequest, current_user_id: int = Depends(get_current_user_id)):
     conn = get_db()
     cur = conn.cursor()
     
     # Get user settings
-    cur.execute("SELECT story_age, story_complexity FROM users WHERE id = %s", (user_id,))
+    cur.execute("SELECT story_age, story_complexity FROM users WHERE id = %s", (current_user_id,))
     user = cur.fetchone()
     
     if not user:
@@ -385,7 +473,7 @@ def create_story(story: CreateStoryRequest, user_id: int = 1):  # TODO: Get user
     cur.execute("""
         INSERT INTO stories (user_id, title, content, story_type, created_at) 
         VALUES (%s, %s, %s, %s, %s) RETURNING id
-    """, (user_id, title, content, story.storyType, datetime.now()))
+    """, (current_user_id, title, content, story.storyType, datetime.now()))
     
     story_id = cur.fetchone()[0]
     conn.commit()
@@ -400,7 +488,7 @@ def create_story(story: CreateStoryRequest, user_id: int = 1):  # TODO: Get user
     }
 
 @app.get("/stories")
-def get_user_stories(user_id: int = 1):  # TODO: Get user_id from token
+def get_user_stories(current_user_id: int = Depends(get_current_user_id)):
     conn = get_db()
     cur = conn.cursor()
     
@@ -409,7 +497,7 @@ def get_user_stories(user_id: int = 1):  # TODO: Get user_id from token
         FROM stories 
         WHERE user_id = %s 
         ORDER BY created_at DESC
-    """, (user_id,))
+    """, (current_user_id,))
     
     stories = []
     for row in cur.fetchall():
@@ -425,12 +513,12 @@ def get_user_stories(user_id: int = 1):  # TODO: Get user_id from token
     return {"stories": stories}
 
 @app.get("/stories/{story_id}")
-def get_story(story_id: int):
+def get_story(story_id: int, current_user_id: int = Depends(get_current_user_id)):
     conn = get_db()
     cur = conn.cursor()
     
     cur.execute("""
-        SELECT id, title, content, story_type, created_at 
+        SELECT id, title, content, story_type, created_at, user_id 
         FROM stories 
         WHERE id = %s
     """, (story_id,))
@@ -440,6 +528,8 @@ def get_story(story_id: int):
     
     if not story:
         raise HTTPException(404, "Story not found")
+    if story[5] != current_user_id:
+        raise HTTPException(403, "Forbidden")
     
     return {
         "id": story[0],
@@ -450,9 +540,18 @@ def get_story(story_id: int):
     }
 
 @app.delete("/stories/{story_id}")
-def delete_story(story_id: int):
+def delete_story(story_id: int, current_user_id: int = Depends(get_current_user_id)):
     conn = get_db()
     cur = conn.cursor()
+    
+    cur.execute("SELECT user_id FROM stories WHERE id = %s", (story_id,))
+    row = cur.fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(404, "Story not found")
+    if row[0] != current_user_id:
+        conn.close()
+        raise HTTPException(403, "Forbidden")
     
     cur.execute("DELETE FROM stories WHERE id = %s", (story_id,))
     conn.commit()

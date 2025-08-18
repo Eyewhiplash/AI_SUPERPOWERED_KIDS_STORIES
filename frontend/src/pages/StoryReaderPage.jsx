@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 
 const themes = {
   candy: {
@@ -29,6 +30,7 @@ const StoryReaderPage = ({ selectedTheme = 'candy' }) => {
   const navigate = useNavigate()
   const currentTheme = themes[selectedTheme] || themes.candy
   const { story, storyData } = location.state || {}
+  const { user } = useAuth()
   const [isSaved, setIsSaved] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isLoadingTTS, setIsLoadingTTS] = useState(false)
@@ -67,7 +69,9 @@ const StoryReaderPage = ({ selectedTheme = 'candy' }) => {
       if (!story || !story.id) return
       if ((images && images.length) > 0) return
       try {
-        const res = await fetch(`http://localhost:8000/stories/${story.id}/images`)
+        const res = await fetch(`http://localhost:8000/stories/${story.id}/images`, {
+          headers: { ...(user?.token ? { 'Authorization': `Bearer ${user.token}` } : {}) }
+        })
         if (!res.ok) return
         const data = await res.json()
         const imgs = Array.isArray(data.images) ? data.images : []
@@ -467,7 +471,7 @@ const StoryReaderPage = ({ selectedTheme = 'candy' }) => {
                   const url = isUniversal
                     ? `http://localhost:8000/universal-stories/${story.id}/images?num_images=3&size=1024x1024`
                     : `http://localhost:8000/stories/${story.id}/images?num_images=3&size=1024x1024`
-                  const res = await fetch(url, { method: 'POST' })
+                  const res = await fetch(url, { method: 'POST', headers: { ...(user?.token ? { 'Authorization': `Bearer ${user.token}` } : {}) } })
                   if (!res.ok) throw new Error('Kunde inte skapa bilder')
                   const data = await res.json()
                   const imgs = Array.isArray(data.images) ? data.images : []
@@ -499,7 +503,7 @@ const StoryReaderPage = ({ selectedTheme = 'candy' }) => {
             {(() => {
               (async () => {
                 try {
-                  const res = await fetch(`http://localhost:8000/stories/${story.id}/images`)
+                  const res = await fetch(`http://localhost:8000/stories/${story.id}/images`, { headers: { ...(user?.token ? { 'Authorization': `Bearer ${user.token}` } : {}) } })
                   if (res.ok) {
                     const data = await res.json()
                     if (Array.isArray(data.images) && data.images.length > 0) {
